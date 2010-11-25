@@ -1,0 +1,54 @@
+$.fn.enable_changed_form = function ( ) {
+	 var _f = this;       
+	 $(':text, :password, textarea', this).each(function() {         
+	        $(this).attr('_value', $(this).val());         
+	    });       
+	       
+	    $(':checkbox, :radio', this).each(function() {         
+	        var _v = this.checked ? 'on' : 'off';         
+	        $(this).attr('_value', _v);         
+	    });       
+	       
+	    $('select', this).each(function() {
+	    	if(this.options.length > 0)
+	        $(this).attr('_value', this.options[this.selectedIndex].value);         
+	    });  
+	}
+
+	$.fn.refresh_changed_form = function() {
+		var _f = this;
+		 $(':text, :password, textarea', _f).each(function() {         
+		        $(this).attr('_value', $(this).val());   
+		    });       
+		    $(':checkbox, :radio', _f).each(function() {         
+		        var _v = this.checked ? 'on' : 'off';         
+		        $(this).attr('_value', _v);         
+		    });       
+		       
+		    $('select', _f).each(function() {
+		    	if(this.options.length > 0)
+		        $(this).attr('_value', this.options[this.selectedIndex].value);         
+		    });            
+	}
+
+	$.fn.is_form_changed = function() {
+	   var f = this;
+	   var changed = false;         
+	   $(':text, :password, textarea', f).each(function() {         
+	       var _v = $(this).attr('_value');         
+	       if(typeof(_v) == 'undefined')   _v = '';         
+	       if(_v != $(this).val()) changed = true;         
+	   });         
+	      
+	   $(':checkbox, :radio', f).each(function() {         
+	       var _v = this.checked ? 'on' : 'off';       
+	       if(_v != $(this).attr('_value')) changed = true;         
+	   });         
+	       
+	   $('select', f).each(function() {         
+	       var _v = $(this).attr('_value');         
+	       if(typeof(_v) == 'undefined')   _v = '';         
+	       if(this.options.length > 0 && _v != this.options[this.selectedIndex].value) changed = true;       
+	   });         
+	   return changed;         
+}
