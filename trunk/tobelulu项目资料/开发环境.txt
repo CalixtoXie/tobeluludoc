@@ -1,0 +1,5 @@
+项目名称：个人资料存储系统(tobelulu)
+开发语言：php 5.x
+数据库：Mysql 5.x
+web服务器：Nginx
+开发人员：
