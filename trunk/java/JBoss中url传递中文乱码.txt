@@ -1,0 +1,17 @@
+JBoss中url传递中文乱码 收藏
+
+解决方法如下:
+
+        1,JBoss4.0.5使用的是tomcat5,而tomcat的默认字符集是ISO-8859-1.找到JBoss的根目录下名为\%JBoss4.0.5%server\default\deploy\jbossweb-tomcat55.sar的文件夹.
+
+        2,修改server.xml文件.
+
+          修改方法,找到<Connector port="8080" ......>默认是8080端口,在后面加入URIEcoding='UTF-8',字符集根据页面进行相应的设置,我的整个项目是使用UTF- 8字符集(包括UTF-8).
+
+    <Connector port="8080" address="${jboss.bind.address}"
+     maxThreads="250" strategy="ms" maxHttpHeaderSize="8192"
+     emptySessionPath="true"  
+     enableLookups="false" redirectPort="8443" acceptCount="100"
+     connectionTimeout="20000" disableUploadTimeout="true"  URIEncoding="UTF-8"/>
+
+    使用tomcat遇到传递url带中文参数出现乱码的解决方法同上.
