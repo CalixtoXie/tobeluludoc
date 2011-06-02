@@ -53,17 +53,11 @@ class PayService{
 	
 		$team = Table::Fetch('team', $coupon['team_id']);
 		$user = Table::Fetch('user', $coupon['user_id']);
-		$area = Table::Fetch('t_city_category_rel',$team["city_id"],'category_id');
+		$area=Table::Fetch('t_city_category_rel',$team["city_id"],'category_id');
 		$order = Table::Fetch('order', $coupon['order_id']);
 		$partner = Table::Fetch('partner', $team['partner_id']);
-		$coupon_rule = $coupon['coupon_rule']?$coupon['coupon_rule']:$team['coupon_rule'];
-		if($coupon_rule == 'single'){
-			$quantity = $order['quantity'];
-		}else{
-			$quantity = 1;
-		}
 		
-      	$msg = PayService::getValidateCodeSmsMsg($team['wap_title'], empty($area['area_name'])?'江苏':$area['area_name'], $quantity, $coupon['secret'], $coupon['expire_time'], $partner['phone']);
+      	$msg = PayService::getValidateCodeSmsMsg($team['wap_title'], empty($area['area_name'])?'江苏':$area['area_name'], $order['quantity'], $coupon['secret'], $team['begin_time'], $team["expire_time"], $partner['phone']);
 		$code = OraDbHelper::insertTable("sms_mt_wait",
       							 array(
       							 	"sequence_id"=>OraDbHelper::getSequenceNextVal('sequence_sms_mt_wait'),
@@ -131,7 +125,7 @@ class PayService{
       	               			));
       	//下发验证
 		$partner = Table::Fetch('partner', $team['partner_id']);
-		$msg = PayService::getValidateCodeSmsMsg($team['wap_title'], empty($area['area_name'])?'江苏':$area['area_name'], $quantity, $validateCode, $team["expire_time"], $partner['phone']);
+		$msg = PayService::getValidateCodeSmsMsg($team['wap_title'], empty($area['area_name'])?'江苏':$area['area_name'], $order['quantity'], $validateCode, $team['begin_time'], $team["expire_time"], $partner['phone']);
       	OraDbHelper::insertTable("sms_mt_wait",
       							 array(
       							 	"sequence_id"=>OraDbHelper::getSequenceNextVal('sequence_sms_mt_wait'),
@@ -159,12 +153,12 @@ class PayService{
 				      			"secret"=>$validateCode,
 				      			"expire_time"=>$team["expire_time"],
 				      			"create_time"=>time(),
-      							"partner_id"=>$team['partner_id'],
-      							"coupon_rule"=>$team['coupon_rule']
+      							"partner_id"=>$team['partner_id']
       							));
 	}
 	
-	private static function getValidateCodeSmsMsg($wap_title, $city_name, $quantity, $validateCode, $expire_time, $shop_phone){
+	private static function getValidateCodeSmsMsg($wap_title, $city_name, $quantity, $validateCode, $begin_time, $expire_time, $shop_phone){
+		$begin_time = date("Y.m.d", $begin_time);
 		$expire_time = date("Y.m.d", $expire_time);
 		$msg = '【12580团】您已成功参与团购：'.$wap_title.'（限'.$city_name.'地区），此次购买数量为'.$quantity.'份，验证码是：'.$validateCode.'，有效期止：'.$expire_time.'，电话：'.$shop_phone;
 		return $msg;
