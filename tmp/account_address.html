@@ -1,0 +1,97 @@
+<!--{include header}-->
+
+<div id="bdw" class="bdw">
+<div id="bd" class="cf">
+<div id="coupons">
+	<div class="dashboard" id="dashboard">
+		<ul>${current_account('/account/address.php')}</ul>
+	</div>
+    <div id="content" class="coupons-box clear">
+		<div class="box clear">
+            <div class="box-top"></div>
+            <div class="box-content">
+                <div class="head">
+                    <h2>我的收货地址</h2>
+				</div>
+				<div class="sect">
+					<div class="wholetip clear">
+						<h3>添加收货地址</h3>
+					</div>
+					<form method="post" action="/account/address.php" class="validator">
+					<table id="" cellspacing="0" cellpadding="0" border="0" class="coupons-table" style="margin-bottom: 0">
+						<tr class="field">
+							<td width="80" align="right">收件人</td>
+							<td width="">
+								<input type="text" class="f-input_1" name="realname" require="true" datatype="require|limit|normalstring" value="{$address['realname']}" msgid="msgid_realname" msg="请输入收件人|不能少于两个字符|只能为中文，数字，字母" min="2" maxlength="15" size="30" />
+								<span id="msgid_realname"></span>
+							</td>
+						</tr>
+						<tr class="field">
+							<td width="80" align="right" valign="top">手机号</td>
+							<td width="">
+								<input type="text" class="f-input_1" name="mobile" require="true" datatype="require|mobile" value="{$address['mobile']}" msgid="msgid_mobile" msg="请输入手机号|手机号格式有误" maxlength="11" size="30" />
+								<span id="msgid_mobile"></span>
+								<span class="hint" style="margin-left: 0">手机号码是我们联系你的最重要的联系方式</span>
+							</td>
+						</tr>
+						<tr class="field">
+							<td width="80" align="right">邮政编码</td>
+							<td width="">
+								<input type="text" class="f-input_1" name="zipcode" require="true" datatype="require|zip" value="{$address['zipcode']}" msgid="msgid_zipcode" msg="请输入邮政编码|邮政编码为6位数字" maxlength="6" size="30" />
+								<span id="msgid_zipcode"></span>
+							</td>
+						</tr>
+						<tr class="field">
+							<td width="80" align="right" valign="top">收货地址</td>
+							<td width="">
+								<input type="text" class="f-input_1" name="address" require="true" datatype="require|safestring|limit|notallnumber" value="{$address['address']}" min="5" maxlength="60" msg="请输入收货地址|请不要输入特殊字符|至少5个字符|不能全部为数字" msgid="msgid_address" size="78" />
+								<span id="msgid_address"></span>
+								<span class="hint" style="margin-left: 0;">地市格式应形如：XX省XX市XX县(区)XXXXXXX</span>
+							</td>
+						</tr>
+						<tr class="field">
+							<td align="right">
+								&nbsp;&nbsp;
+								<input type="hidden" name="id" value="{$address['id']}" />
+								<input class="formbutton" type="submit" value="保存" />
+							</td>
+							<td>&nbsp;</td>
+						</tr>
+                    </table>
+                    </form>
+					<table id="orders-list" cellspacing="0" cellpadding="0" border="0" class="coupons-table" width="650px">
+						<tr><th colspan="5">已保存的收货地址</th></tr>
+						<tr class="alt">
+							<td width="80">收件人</td>
+							<td width="">地址</td>
+							<td width="60">手机号</td>
+							<td width="60">邮政编码</td>
+							<td width="70">操作</td>
+						</tr>
+						<!--{loop $addrs $index $one}-->
+						<tr>
+							<td style="white-space: nowrap;">${Utility::wordwrap_advance($one['realname'], 5, "<BR>")}</td>
+							<td style="white-space: nowrap;">${Utility::wordwrap_advance($one['address'], 17, "<BR>")}</td>
+							<td>{$one['mobile']}</td>
+							<td>{$one['zipcode']}</td>
+							<td>
+								<a href="/account/address.php?addr_id={$one['id']}">修改</a>|
+								<a href="/account/address.php?addr_id={$one['id']}&del_flag=1" onclick="return confirm('您确认要删除该收货地址吗？');">删除</a>
+							</td>							
+						</tr>
+						<!--{/loop}-->
+                  </table>
+                  </div>
+            </div>
+            <div class="box-bottom"></div>
+        </div>
+    </div>
+    <div id="sidebar">
+		<!--{include block_side_aboutorder}-->
+    </div>
+</div>
+
+</div> <!-- bd end -->
+</div> <!-- bdw end -->
+
+<!--{include footer}-->
