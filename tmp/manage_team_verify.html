@@ -1,0 +1,307 @@
+<!--{include manage_header}-->
+
+<div id="bdw" class="bdw">
+<div id="bd" class="cf">
+<div id="leader">
+	<div class="dashboard" id="dashboard">
+		<ul>${mcurrent_team('team')}</ul>
+	</div>
+	<div id="content" class="clear mainwide">
+        <div class="clear box">
+            <div class="box-top"></div>
+            <div class="box-content">
+                <div class="head">
+					<h2>确认团购内容</h2>（*号表示清结算内合同定义信息）
+				</div>
+                <div class="sect">
+				<form id="verify-team-form" method="post" name="verify-team-form" onsubmit="return teamCheck();">
+					<input type="hidden" name="id" value="{$team['id']}" />
+					<input type="hidden" name="check_value" id="check_value" value="1" />
+					<input type="hidden" name="deny_reason" id="deny_reason" value="" />
+					 <div class="wholetip clear">
+	                    <h3>（{$team['title']}）</h3>
+	                  </div>
+					<div style="background:#fffbcc; border-bottom:1px solid #e8dd60; padding:10px 0; border-top:1px solid #e8dd60; height:300px;">
+	                  <div class="wholetip clear">
+	                    <h3>设置订阅短息内容</h3>
+	                  </div>
+	                  <div class="dilog" style="display:none;" id="team-confirm-dialog">
+	                    <p id="team-confirm-dialog-msg">请确认订阅短信内容！</p> 
+	                    <div class="dilog_but">
+	                    <input value="确定" name="leader-submit" id="leader-submit2" class="formbutton" type="button" onclick="javascrip:jQuery('#team-confirm-dialog').toggle();"/>
+	                    </div>
+                      </div> 
+                  	  <div class="field">
+	                    <label>发送内容</label>
+	                    <div style="float:left; width:608px;">
+	                      <textarea name="sms_message" cols="45" rows="6" class="f-textarea_1" id="sms_message" datatype="require" require="true" limitb="140" keyup="changeMessage();" onpropertychange="changeMessage();">{$team['sms_message']}</textarea>
+	                    </div>
+                    	<div class="dx_tishi"><a href="javascript:genMessage();" style="text-decoration:underline" >重置</a></div>
+                    	<div class="dx_tishi_r" id="message_tips" ></div>
+                    	<span class="hint">
+                      		生成格式：仅售{团购价}，原价{市场价}{商品名称}一份，上tuan.12580777.com抢购！回复QXDY取消订阅【12580商户联盟】<br />
+                    	</span>
+                      </div>
+                    </div>
+                    
+					<div class="wholetip clear"><h3>1、基本信息</h3></div>
+					<div class="field">
+						<label>清结算合同id</label>
+						<!--{if ($team['begin_time'] > $now)}-->
+							<select name="contract_id" id="team-create-contract-id" >
+								<option value=""></option>
+								<!--{loop $contract_list $index $contract}-->
+								<option value="{$contract['CONTRACT_ID']}" <?php if($team['contract_id']==$contract['CONTRACT_ID']) echo 'selected';?> >{$contract['BUSI_NAME']}</option>
+								<!--{/loop}-->
+							</select>
+						<!--{else}-->
+							{$team['contract_id']}<!--{loop $contract_list $index $contract}--><!--{if ($team['contract_id']==$contract['CONTRACT_ID'])}-->({$contract['BUSI_NAME']})<!--{/if}--><!--{/loop}-->
+						<!--{/if}-->
+					</div>
+					<div class="field">
+						<label>*城市及分类</label>
+						<select name="city_id" id="city_list" class="f-input" style="width:160px;">${Utility::Option(Utility::OptionArray($hotcities, 'id','name'), $team['city_id'], '')}</select><select name="group_id" class="f-input" style="width:160px;">${Utility::Option($groups, $team['group_id'])}</select><select name="conduser" class="f-input" style="width:160px;">${Utility::Option($option_cond, $team['conduser'])}</select>
+					</div>
+					<div class="field">
+						<label>*团购标题</label>
+						<input type="text" size="30" name="title" id="team-create-title" class="f-input" value="{$team['title']}" datatype="require" require="true" />
+					</div>
+					<div class="field">
+						<label>wap团购标题</label>
+						<input type="text" size="30" maxlength="16" name="wap_title" id="team-create-wap-title" class="f-input" value="{$team['wap_title']}" require="true" datatype="require" limitb="16"/>
+						<span class="hint">最多16个字符</span>
+					</div>
+					<div class="field">
+						<label>*市场价</label>
+						<input type="text" size="10" name="market_price" id="team-create-market-price" class="number" value="${moneyit($team['market_price'])}" datatype="money" require="true" />
+						<label>*团购价</label>
+						<input type="text" size="10" name="team_price" id="team-create-team-price" class="number" value="${moneyit($team['team_price'])}" datatype="double" require="true" />
+						<label>每人最少购买</label>
+						<input type="text" size="10" name="per_min_number" id="team-create-per-min-number" class="number" value="${intval($team['per_min_number'])}" maxLength="6" datatype="number" require="true" />
+						<span class="hint">团购价必须低于市场价，每人最少购买数量必须低于或等于每人限购数量</span>
+					</div>
+					<div class="field">
+						<label>*最低数量</label>
+						<input type="text" size="10" name="min_number" id="team-create-min-number" class="number" value="${intval($team['min_number'])}" maxLength="6" datatype="number" require="true" />
+						<label>*最高数量</label>
+						<input type="text" size="10" name="max_number" id="team-create-max-number" class="number" value="${intval($team['max_number'])}" maxLength="6" datatype="number" require="true" />
+						<label>每人限购</label>
+						<input type="text" size="10" name="per_number" id="team-create-per-number" class="number" value="${intval($team['per_number'])}" maxLength="6" datatype="number" require="true" />
+						<span class="hint">最低数量必须大于0，最高数量/每日限购：0 表示没最高上限 （产品数|人数 由成团条件决定）</span>
+					</div>
+					<!-- <div class="field">
+						<label>开始日期</label>
+						<input type="text" size="10" name="begin_time" id="team-create-begin-time" class="date" value="${date('Y-m-d', $team['begin_time'])}" maxLength="10" />
+						<label>结束日期</label>
+						<input type="text" size="10" name="end_time" id="team-create-end-time" class="date" value="${date('Y-m-d', $team['end_time'])}" maxLength="10" />
+						<label>券有效期</label>
+						<input type="text" size="10" name="expire_time" id="team-create-expire-time" class="date" value="${date('Y-m-d', $team['expire_time'])}" maxLength="10" />
+						<span class="hint">团购开始于开始日期00:00:00，结束于结束日期00:00:00</span>
+					</div>
+					-->
+					<div class="field">
+						<label>*开始日期</label>
+						<input type="text" size="25" name="begin_time" style="float:left;margin:3px 15px 0 0;" id="team-create-begin-time" class="Wdate" value="${date('Y-m-d H:i', $team['begin_time'])}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm'})" maxLength="20" />
+						<label>*结束日期</label>
+						<input type="text" size="25" name="end_time" id="team-create-end-time" style="float:left;margin:3px 15px 0 0;" class="Wdate" value="${date('Y-m-d H:i', $team['end_time'])}" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm'})" maxLength="20" />
+						<!-- <span class="hint">团购开始于开始日期00:00:00，结束于结束日期00:00:00</span>  -->
+					</div>
+					<div class="field">
+						<label>*券有效期</label>
+						<input type="text" size="15" name="expire_time" id="team-create-expire-time" style="float:left;margin:3px 15px 0 0;" class="Wdate" value="${date('Y-m-d', $team['expire_time'])}" onfocus="WdatePicker()" maxLength="10" />
+					</div>
+					<div class="field">
+						<label>*券生成规则</label>
+						<select name="coupon_rule" id="team-create-coupon-rule" datatype="require" require="true">
+							<option value="single"  >基于订单</option>
+							<option value="multiple" <?php if($team['coupon_rule']=='multiple') echo 'selected';?>>基于订单购买数量</option>
+						</select>
+						<span class="hint">支付成功后生成的券规则，一条或多条</span>
+					</div>
+					<div class="field">
+						<label>显示基数</label>
+						<input type="text" size="10" name="cardinal_num" id="team-create-cardinal-num" class="number" value="${intval($team['cardinal_num'])}" maxLength="6" datatype="number" require="true" />
+						<label>+实际购买量</label>
+						<label> X 显示系数</label>
+						<input type="text" size="3" name="modulus_num" id="team-create-modulus-num" class="number" value="${intval($team['modulus_num'])}" maxLength="3" datatype="number" require="true" />
+						<label> = 显示数量</label>
+					</div>
+					<div class="field">
+						<label>本团简介</label>
+						<div style="float:left;"><textarea cols="45" rows="5" name="summary" id="team-create-summary" class="f-textarea" datatype="require" require="true">${htmlspecialchars($team['summary'])}</textarea></div>
+					</div>
+					<div class="field">
+						<label>wap简介</label>
+						<div style="float:left;"><textarea cols="45" rows="5" maxlength="160"  name="wap_summary" id="team-create-wap-summary" class="f-textarea" datatype="require" require="true" limitb="160">${htmlspecialchars($team['wap_summary'])}</textarea></div>
+						<span class="hint">最多160个字符，图片大小请控制在166 X 100</span>
+					</div>
+					<div class="field">
+						<label>特别提示</label>
+						<div style="float:left;"><textarea cols="45" rows="5" name="notice" id="team-create-notice" class="f-textarea editor">{$team['notice']}</textarea></div>
+						<span class="hint">关于本团标的有效期，使用说明</span>
+					</div>
+					<input type="hidden" name="guarantee" value="Y" />
+					<input type="hidden" name="system" value="Y" />
+					<div class="wholetip clear"><h3>2、团购标的物信息</h3></div>
+					<div class="field">
+						<label>商户</label>
+						<input type="text" id="partner_name" disabled="disabled" class="f-input" value="{$partners[$team['partner_id']]}" size="30" onclick="document.getElementById('lmsh_partner_0').style.display='block';"/>
+						<input type="hidden" name="partner_id" id="partner_id" value="{$team['partner_id']}"/>
+						<input type="button" class="but_selectmerchant" value="选择商户" onclick="document.getElementById('lmsh_partner_0').style.display='block';"/>
+					</div>
+					<div id="lmsh_partner_0" style="position:relative; margin:0; float:left; clear:both;display:none;">
+	                    <div style="position:absolute; padding:0 0 0 80px;">
+	                      <iframe scrolling="no" frameborder="no" name="lmsh_partner_frame_0" id="lmsh_partner_frame_0" style="border:0;" width="665" height="159" src="/manage/team/partner0.php" ></iframe>
+	                    </div>
+                  </div>
+					<div class="field">
+                    	<label>关联商户</label>
+                    	<input type="text" name="shop_name" id="shop_name" disabled="disabled" class="f-input" value="{$team['shop_name']}" size="30" onclick="document.getElementById('lmsh_partner').style.display='block';"/>
+                    	<input type="hidden" name="shop_id" id="shop_id" value="{$team['shop_name']}^{$team['shop_id']}"/>
+                    	<input name="" type="button" class="but_selectmerchant" value="选择商户" onclick="document.getElementById('lmsh_partner').style.display='block';"/>
+                    	<span ><a href="http://www.12580777.com/lmshManage/" target="_blank">添加新商户</a></span>
+                  </div>
+	              <div id="lmsh_partner" style="position:relative; margin:0; float:left; clear:both;display:none;">
+	                    <div style="position:absolute; padding:0 0 0 80px;">
+	                      <iframe scrolling="no" frameborder="no" name="lmsh_partner_frame" id="lmsh_partner_frame" style="border:0;" width="665" height="159" src="/manage/team/partner.php" ></iframe>
+	                    </div>
+                  </div>
+					<div class="field">
+						<label>代金券使用</label>
+						<input type="text" size="10" name="card" id="team-create-card" class="number" value="${moneyit($team['card'])}" require="true" datatype="money" />
+						<span class="inputtip">可使用代金券最大面额</span>
+					</div>
+					<div class="field">
+						<label>*商品名称</label>
+						<input type="text" size="30" name="product" id="team-create-product" class="f-input" value="{$team['product']}" datatype="require" require="true" />
+					</div>
+					<div class="field">
+						<label>商品图片</label>
+						<input type="file" size="30" name="upload_image" id="team-create-image" class="f-input" />
+						<!--{if $team['image']}--><span class="hint">${team_image($team['image'])}</span><!--{/if}-->
+					</div>
+					<div class="field">
+						<label>商品图片1</label>
+						<input type="file" size="30" name="upload_image1" id="team-create-image1" class="f-input" />
+						<!--{if $team['image1']}--><span class="hint">${team_image($team['image1'])}</span><!--{/if}-->
+					</div>
+					<div class="field">
+						<label>商品图片2</label>
+						<input type="file" size="30" name="upload_image2" id="team-create-image2" class="f-input" />
+						<!--{if $team['image2']}--><span class="hint">${team_image($team['image2'])}</span><!--{/if}-->
+					</div>
+					<div class="field">
+						<label>wap商品图片</label>
+						<input type="file" size="30" name="upload_image3" id="team-create-wap-image" class="f-input" />
+						<!--{if $team['wap_image']}--><span class="hint">${team_image($team['wap_image'])} 图片大小为166*100
+						<BR><img alt="" src="${team_image($team['wap_image'])}">
+						</span>
+						<!--{/if}-->
+					</div>
+					<div class="field">
+						<label>FLV视频短片</label>
+						<input type="text" size="30" name="flv" id="team-create-flv" class="f-input" value="{$team['flv']}" />
+						<span class="hint">形式如：http://.../video.flv</span>
+					</div>
+					<div class="field">
+						<label>本单详情</label>
+						<div style="float:left;"><textarea cols="45" rows="5" name="detail" id="team-create-detail" class="f-textarea editor">${htmlspecialchars($team['detail'])}</textarea></div>
+					</div>
+					<div class="field">
+						<label>网友的点评</label>
+						<div style="float:left;"><textarea cols="45" rows="5" name="userreview" id="team-create-userreview" class="f-textarea">${htmlspecialchars($team['userreview'])}</textarea></div>
+						<span class="hint">格式："真好用|小兔|http://ww....|XXX网"，每行写一个点评</span>
+					</div>
+					<div class="field">
+						<label>{$INI['system']['abbreviation']}推广辞</label>
+						<div style="float:left;"><textarea cols="45" rows="5" name="systemreview" id="team-create-systemreview" class="f-textarea editor">${htmlspecialchars($team['systemreview'])}</textarea></div>
+					</div>
+					<div class="wholetip clear"><h3>3、配送信息</h3></div>
+					<div class="field">
+						<label>递送方式</label>
+						<div style="margin-top:5px;" id="express-zone-div"><input type="radio" name="delivery" value="coupon" ${$team['delivery']=='coupon'?'checked':''} />&nbsp;{$INI['system']['couponname']}&nbsp;<input type="radio" name="delivery" value='express' ${$team['delivery']=='express'?'checked':''} />&nbsp;快递&nbsp;<input type="radio" name="delivery" value='pickup' ${$team['delivery']=='pickup'?'checked':''} />&nbsp;自取</div>
+					</div>
+					<div id="express-zone-coupon" style="display:${$team['delivery']=='coupon'?'block':'none'};">
+						<div class="field">
+							<label>消费返利</label>
+							<input type="text" size="10" name="credit" id="team-create-credit" class="number" value="${moneyit($team['credit'])}" datatype="money" require="true" />
+							<span class="inputtip">消费{$INI['system']['couponname']}时，获得账户余额返利，单位CNY元</span>
+						</div>
+					</div>
+					<div id="express-zone-pickup" style="display:${$team['delivery']=='pickup'?'block':'none'};">
+						<div class="field">
+							<label>联系电话</label>
+							<input type="text" size="10" name="mobile" id="team-create-mobile" class="f-input" value="{$team['mobile']}" />
+						</div>
+						<div class="field">
+							<label>提货地址</label>
+							<input type="text" size="10" name="address" id="team-create-address" class="f-input" value="{$team['address']}" />
+						</div>
+					</div>
+					<div id="express-zone-express" style="display:${$team['delivery']=='express'?'block':'none'};">
+						<div class="field">
+							<label>快递费用</label>
+							<input type="text" size="10" name="fare" id="team-create-fare" class="number" value="${intval($team['fare'])}" maxLength="6" datatype="money" require="true" />
+							<span class="inputtip">市内快递费用，原则上3-10元之间</span>
+						</div>
+						<div class="field">
+							<label>快递配送说明</label>
+							<div style="float:left;"><textarea cols="45" rows="5" name="express" id="team-create-express" class="f-textarea">{$team['express']}</textarea></div>
+						</div>
+					</div>
+				 <div class="act">
+                    <input value="通过审核" name="commit" id="leader-submit" class="formbutton" type="submit" style="margin:10px 0 0 -60px;"/><input value="不通过审核" name="edit" class="formbutton" type="button" style="margin:10px 0 0 10px;" onclick="rejectView();"/><input value="预览前台效果" name="view" class="formbutton" type="button" style="margin:10px 0 0 10px;" onclick="window.open('${WEB_ROOT}/team.php?id={$team['id']}');"/>
+                 </div>
+                </form>
+                </div>
+            </div>
+            <div class="box-bottom"></div>
+        </div>
+	</div>
+
+<div id="sidebar">
+</div>
+
+</div>
+</div> <!-- bd end -->
+</div> <!-- bdw end -->
+<script type="text/javascript">
+<!--
+function rejectView(){
+	X.get("${WEB_ROOT}/ajax/manage.php?action=teamreject&id={$team['id']}");
+	return false;
+}
+
+function teamCheck(){
+	var smsMessage = $("#sms_message").val();
+	var tmpMsg = smsMessage.replace(/(^\s*)|(\s*$)/g, "");
+	if(tmpMsg == ''){
+		alert("短信内容不能为空");
+		return false;
+	}
+	if(smsMessage.length >140){
+		alert("短信内容不能超过140个字");
+		return false;
+	}
+	return true;
+}
+
+function genMessage(){
+	$("#sms_message").val("仅售"+$("#team-create-team-price").val()+"元，原价"+$("#team-create-market-price").val()+"元"+$("#team-create-product").val()+"一份，上tuan.12580777.com抢购！回复QXDY取消订阅【12580商户联盟】");
+}
+
+function changeMessage(){
+	var smsMessage = $("#sms_message").val();
+	smsMessage.replace(/(^\s*)|(\s*$)/g, "");
+	var limitLength=140;
+	if(smsMessage.length >limitLength){
+		$("#message_tips").html("");
+		$("#message_tips").append('<img src="/static/css/i/img_close.gif" width="16" height="16" align="absmiddle" /> 已超出<span class="red_bold">'+(smsMessage.length-limitLength)+'</span>字!');
+	}else{
+		$("#message_tips").html("");
+		$("#message_tips").append("还可以输入"+(limitLength-smsMessage.length)+"个字");
+	}
+}
+//-->
+</script>
+<!--{include manage_footer}-->
