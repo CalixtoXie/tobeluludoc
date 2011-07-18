@@ -18,8 +18,8 @@ $total_fee = $_POST['total_fee'];
 if ( $_ == 'charge' ) {
 	if($_POST['trade_status'] == 'TRADE_FINISHED' || $_POST['trade_status'] == 'TRADE_SUCCESS') {
 		@list($_, $user_id, $create_time, $_) = explode('-', $out_trade_no, 4);
-		if(ZFlow::CreateFromCharge($total_fee, $user_id, $create_time, 'alipay')){
-			Phplog::RecordChargeLog("支付宝充值{$total_fee}元成功！支付订单号:{$out_trade_no}");
+		if(ZFlow::CreateFromCharge($total_fee, $user_id, $create_time, 'chinabank')){
+			Phplog::RecordChargeLog("网银充值{$total_fee}元成功！支付订单号:{$out_trade_no}");
 		}
 	}
 	die('success');
@@ -34,28 +34,25 @@ if($verify_result) {
 		}
 		$is_ok = false;
 		if ( $order['state'] == 'unpay' ) {
-			//查找团购
-			$team=Table::Fetch('team',$order['team_id'],'id');
-			if(!$team) {
-				Phplog::RecordOrderFailLog(" 团购不存在 团购号:".$team['id']);
-				die("success");
-			}
-			
-			      		
-			$plus = $team['conduser']=='Y' ? 1 : $quantity;
-			$team['now_number'] += $plus;
-						
-			//团购数量已超过上限
-			if ($team['max_number']>0 && $team['now_number'] > $team['max_number'] ) {
-				Phplog::RecordOrderFailLog(" 团购数量已超过上限 团购订单号:".$order_id);
-				die('success');
-			}elseif($team['end_time'] < time()){
-				Phplog::RecordOrderFailLog(" 团购已结束 团购订单号:".$order_id);
-				//团购已超时
-				die('success');
-			}
-				
-		
+					//查找团购
+					$team=Table::Fetch('team',$order['team_id'],'id');
+					if(!$team) {
+						Phplog::RecordOrderFailLog(" 团购不存在 团购号:".$team['id']);
+						die("success");
+					}
+					
+					$plus = $team['conduser']=='Y' ? 1 : $quantity;
+					$team['now_number'] += $plus;
+								
+					//团购数量已超过上限
+					if ($team['max_number']>0 &&  $team['now_number'] > $team['max_number'] ) {
+						Phplog::RecordOrderFailLog(" 团购数量已超过上限 团购订单号:".$order_id);
+						die('success');
+					}elseif($team['end_time'] < time()){
+						Phplog::RecordOrderFailLog(" 团购已结束 团购订单号:".$order_id);
+						//团购已超时
+						die('success');
+					}
 					//1
 					$table = new Table('order');
 					$table->SetPk('id', $order_id);
@@ -64,7 +61,7 @@ if($verify_result) {
 					$table->order_id = $out_trade_no;
 					$table->state = 'pay';
 					$table->quantity = $quantity;
-					$table->service = 'alipay';
+					$table->service = 'chinabank';
 					$flag = $table->update( array('state', 'pay_id', 'money','order_id','quantity','service') );
 		
 					if ( $flag ) {
@@ -73,19 +70,20 @@ if($verify_result) {
 						$table->order_id = $order_id;
 						$table->money = $total_fee;
 						$table->currency = 'CNY';
-						$table->bank = '支付宝';
-						$table->service = 'alipay';
+						$table->bank = '网银(支付宝)';
+						$table->service = 'chinabank';
 						$table->create_time = time();
 						$table->insert( array('id', 'order_id', 'money', 'currency', 'service', 'create_time', 'bank') );
 						
 						$order = Table::Fetch('order', $order_id);
+						
 						//update team,user,order,flow state//
 						ZTeam::BuyOne($order);
 						//查找地市
 		      			$area=Table::Fetch('t_city_category_rel',$team["city_id"],'category_id');
 		      			//查找用户
 		      			$user=Table::Fetch('user',$order["user_id"],'id');
-		      			$order_type = '2';
+		      			$order_type = '3';
 		      			//更新支付状态
 		  				PayService::afterPayDoSomething($team,$order,$user,$area,$out_trade_no,$order_type);
 		  				Phplog::RecordOrderSuccessLog(" 流水号:".$_POST['trade_no']." 通知id:".$_POST['notify_id']." 团购订单号:".$order_id." 支付金额:".$total_fee." 通知时间时间：".$_POST['notify_time']);
@@ -111,6 +109,6 @@ if($verify_result) {
 			}
 		}
 		die("success");
-	}
+	}	
 }
-die("fail");
+echo "fail";
