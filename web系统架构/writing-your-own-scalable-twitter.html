@@ -1,0 +1,627 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" id="typepad-standard" xmlns:fb="http://www.facebook.com/2008/fbml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="generator" content="http://www.typepad.com/" />
+	<meta name="keywords" content="GigaSpaces, Scalability, Twitter" />
+	<meta name="description" content="Guy Nirpaz, Uri Cohen and Shay Banon came up with an interesting exercise as part of the recent partner training that took place at the GigaSpaces office. In this exercise, the students were asked to come up with a scalable..." />
+	<link rel="stylesheet" href="http://natishalom.typepad.com/nati_shaloms_blog/styles.css?v=6" type="text/css" media="screen" />
+	<link rel="stylesheet" href="http://static.typepad.com/.shared:v20110921.03-0-gf93a73d:typepad:he/themes/common/print.css" type="text/css" media="print" />
+	<link rel="alternate" type="application/atom+xml" title="Posts on 'Nati Shalom's Blog' (Atom)" href="http://natishalom.typepad.com/nati_shaloms_blog/atom.xml" />
+	<link rel="alternate" type="application/rss+xml" title="Posts on 'Nati Shalom's Blog' (RSS 1.0)" href="http://natishalom.typepad.com/nati_shaloms_blog/index.rdf" />
+	<link rel="alternate" type="application/rss+xml" title="Posts on 'Nati Shalom's Blog' (RSS 2.0)" href="http://natishalom.typepad.com/nati_shaloms_blog/rss.xml" />
+	<script type="text/javascript">
+		var TPApp = {};
+		TPApp.app_uri = "http://www.typepad.com/";
+	</script>
+	<script type="text/javascript" src="http://static.typepad.com/.shared:v20110921.03-0-gf93a73d:typepad:he/js/yui/yahoo-dom-event.js,/js/app/thumbnail-gallery-min.js,/js/sixatrack-loader.js,/js/app/flyouts-min.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['t2._setAccount', 'UA-225723-36']);
+		_gaq.push(['t2._setDomainName', 'none']);
+		_gaq.push(['t2._setAllowLinker', true]);
+        _gaq.push(['t2._setCustomVar', 1, 'Blog', '6a00d835457b7453ef00d835457b7553ef', 3]);
+        _gaq.push(['t2._setCustomVar', 2, 'Page Type', 'Individual', 3]);
+		_gaq.push(['t2._trackPageview']);
+
+		(function() {
+		  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+	<link rel="alternate" type="application/atom+xml" title="Comments on 'Designing a Scalable Twitter' (Atom)" href="http://natishalom.typepad.com/nati_shaloms_blog/2009/04/writing-your-own-scalable-twitter/comments/atom.xml" />
+	<link rel="alternate" type="application/rss+xml" title="Comments on 'Designing a Scalable Twitter' (RSS 2.0)" href="http://natishalom.typepad.com/nati_shaloms_blog/2009/04/writing-your-own-scalable-twitter/comments/rss.xml" />
+	<title>Nati Shalom's Blog: Designing a Scalable Twitter</title>
+	<link rel="start" href="http://natishalom.typepad.com/nati_shaloms_blog/" title="Home" />
+	<link rel="prev" href="http://natishalom.typepad.com/nati_shaloms_blog/2009/04/practical-guide-for-developing-enterprise-application-on-the-cloud.html?no_prefetch=1" title="Challanges for Developing Enterprise Application on the Cloud" />
+	<link rel="next" href="http://natishalom.typepad.com/nati_shaloms_blog/2009/05/twitter-as-a-scalability-case-study-its-the-architecture-stupid.html?no_prefetch=1" title="Twitter as a scalability case study &amp;ndash; it&amp;rsquo;s the architecture, stupid!" />
+
+</head>
+
+<body class="layout-two-column-right">
+	
+	<div id="container">
+		<div id="container-inner" class="pkg">
+			
+			<!-- banner -->
+<div id="banner">
+	<div id="banner-inner" class="pkg">
+		
+		<h1 id="banner-header"><a href="http://natishalom.typepad.com/nati_shaloms_blog/" accesskey="1">Nati Shalom's Blog</a></h1>
+		<h2 id="banner-description">
+			Thoughts on Scalability, NoSQL, Big Data, DevOps, Cloud, PaaS 
+		</h2>
+	</div>
+</div>
+
+<div id="nav">
+	<div id="nav-inner">
+		<ul class="nav-list pkg">
+			<li class="nav-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/">Home</a></li>
+			<li class="nav-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/archives.html">Archives</a></li>
+			<li class="last-nav-list-item nav-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/atom.xml">Subscribe</a></li>
+		</ul>
+	</div>
+</div>
+
+
+			<div id="pagebody">
+				<div id="pagebody-inner" class="pkg">
+					<div id="alpha">
+						<div id="alpha-inner" class="pkg">
+							<!-- content nav -->
+<p class="content-nav">
+	<a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/04/practical-guide-for-developing-enterprise-application-on-the-cloud.html">&laquo; Challanges for Developing Enterprise Application on the Cloud</a> |
+	<a href="http://natishalom.typepad.com/nati_shaloms_blog/">Main</a>
+	| <a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/05/twitter-as-a-scalability-case-study-its-the-architecture-stupid.html">Twitter as a scalability case study  its the architecture, stupid! &raquo;</a>
+</p>
+
+<!-- entry -->
+	<h2 class="date-header">April 14, 2009</h2>
+
+
+<div class="entry-category-architecture entry-category-cloud_computing entry-category-compass entry-category-data_grid entry-category-gigaspaces entry-category-grid entry-category-jinijavaspaces entry-category-lucene entry-category-realtime entry-category-scalability entry-category-spacebased_architecture entry-author-nati_shalom entry-type-post entry" id="entry-65325669">
+			<h3 class="entry-header">Designing a Scalable Twitter</h3>
+	
+	<div class="entry-content">
+		<div class="entry-body">
+			<p><a href="http://www.jroller.com/gnirpaz/">Guy Nirpaz</a>, <a href="http://uri-cohen.blogspot.com/">Uri Cohen</a> and <a href="http://www.kimchy.org/">Shay Banon</a> came up with an interesting exercise as part of the recent partner training that took place at the GigaSpaces office. In this exercise, the students were asked to come up with a scalable design for Twitter, using Space-Based Architecture.</p> <p>There are some interesting scalability lessons from this exercise, which are applicable to anyone looking to implement new-style real-time web applications such as the ones used for social networking.</p> <p>In this post I&#39;ll&#0160; try to summarize the main patterns to put into place and considerations to make when designing such a scalable architecture<span style="font-weight: bold;">.</span></p><h2>Background:</h2> <p>For those of you who are not yet familiar with the service, Twitter is sort of a SMS-service meets discussion board.&#0160; You can post short messages (up to 140 characters) that can be shared with a group of subscribers that are referred to as &quot;followers&quot;. The main difference between twitter and other messaging applications is that both SMS and Instant Messaging (IM) applications were designed primarily for one-on-one communications whereis Twitter was designed primarily for broadcast communications (publish/subscribe, or pub/sub). Another aspect that is special about Twitter is that by default anyone can follow anyone else. In other words, it was designed for open communications, not private, as were IM and SMS.</p><h2>What are Twitter&#39;s scalability challenges?</h2> <p>1. Sending a tweet (a message on Twitter is known as a &#39;tweet&#39;) -– The challenge is how to handle an ever-growing volume of tweets and re-tweets and responses that can lead to a viral &quot;message storm&quot;</p> <p>2. Reading tweets – The challenge is how to handle a large number of concurrent users that continually “listen” for tweets from users (or topics) they follow.</p> <h2>Designing A Scalable Twitter</h2> <h3>Choosing the right scalability patterns</h3> <p>Almost every challenge in software architecture has its roots in one of the existing patterns. So the simplest course is to start by looking for those patterns, and choosing the right patterns to scale the application. Looking at <a href="http://www.typepad.com/site/blogs/6a00d835457b7453ef00d835457b7553ef/post/6a00d835457b7453ef01156f1ae981970c/edit">many other scalable architectures</a>, we&#39;ll begin with a <a href="http://en.wikipedia.org/wiki/Partition">partitioning</a> pattern as the core design principle. By partitioning our Twitter-like application we&#39;ll spread the load across a cluster of servers and scale by simply adding more servers (i.e., partitions).&#0160; Another important architectural observation about Twitter is that it doesn’t fit into the classic database-centric design that most web applications do. On the flip side, it doesn’t fit well with a messaging-centric design (pub/sub) either. It is a combination of the two. </p> <p>A pattern that is suitable for this type of collaborative messaging is known as a <a href="http://en.wikipedia.org/wiki/Blackboard_system">blackboard pattern</a>.&#0160; In our design, we will use those two design patterns -- partitioning and blackboard -- as the foundation for our scalable Twitter application. With the foundation in place, let’s list the requirements and examine how these patterns can be used to scale the app.</p> <h3>Scalability Requirements</h3><p> We&#39;ll assume a relatively extreme scaling requirement:</p><ul>
+<li>Tweet Volume: 10 billion tweets per day </li>
+<li>Tweet Storage: 100 Gigabytes per day (with 10:1 compression) </li>
+</ul>
+<p>Additional assumptions:</p><ul>
+<li>Tweets are limited to 140 characters</li>
+<li>Tweets are immutable, i.e., there are no updates, only inserts</li>
+<li>Twitter limits client applications to 70 requests per hour</li>
+</ul>
+<p>Now that we have the foundational patterns and clear requirements, we can design the architecture. We&#39;ll start first with the blackboard system.</p> <h2>Using an In-Memory Data Grid (IMDG) as a Blackboard System</h2> <p>The are several approaches to building a blackboard system. To maximize performance and scalability, we&#39;ll store the data in memory, thus avoiding disk I/O, which is often the main cause for contention. For years, Java has provided a model for designing blackboard systems known as <a href="http://en.wikipedia.org/wiki/Tuple_space">JavaSpaces</a>. More recently, distributed caching has become popular and can provide similar capabilities to those of JavaSpaces. Let&#39;s examine two popular distributed caching approaches for our blackboard system: </p> <ol>
+<li>Simple read-mostly caching using <a href="http://www.danga.com/memcached/">memcached</a> </li>
+<li>Read/write caching, also known as an In-Memory Data Grid (IMDG)</li>
+</ol>
+ <h3>Choosing between memcached and an IMDG</h3> <p>Memcached enables us to to store the data (tweets) in a distributed memory set and read it in a scalable fashion. Having said that, be aware that memcached is not transactionally-safe and is not designed for reliability (i.e., it doesn’t support fail-over and high availability). That means that if we use memcached or something similar, we will have to use a database as the back-end. Every tweet posted will have to be written to both memcached and the database in a <strong>synchronous</strong> fashion to ensure that no tweet will be lost. This approach may be good enough for scaling read access, however, for writes and updates it offers limited scalability.</p> <p>Unlike memcached, which was designed for simple read-mostly caching, <a href="http://en.wikipedia.org/wiki/Data_grid">In-Memory Data Grids</a>&#0160; are designed for handling a read/write scenario, and can therefore act as the system-of-record for both write and read operations. We can still use a database for long-term persistence, but because the IMDG maintains its reliability purely in memory, we can write and update the database <strong>asynchronously</strong> and avoid hitting the database bottleneck.</p> <p>Todd Hoff, author of <a href="http://www.highscalability.com">highscalability.com</a> wrote an interesting summary that covers the different products in this space in a recent post:&#0160; <a href="http://highscalability.com/are-cloud-based-memory-architectures-next-big-thing">Are Cloud Based Memory Architectures the Next Big</a> Thing?</p><p> Todd provide a clear explanation of how an IMDG works (using GigaSpaces):</p> <br /> <blockquote><p><span style="text-decoration: underline;"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01157044cd73970b-pi" style="display: inline;"><img alt="Nati blog 1 (2)" border="0" class="at-xid-6a00d835457b7453ef01157044cd73970b " src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01157044cd73970b-800wi" title="Nati blog 1 (2)" /></a> </span> <br /><span style="text-decoration: underline;"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4eabfc970c-pi" style="display: inline;"><img alt="Natiblog 2 (2)" border="0" class="at-xid-6a00d835457b7453ef01156f4eabfc970c" src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4eabfc970c-800wi" title="Natiblog 2 (2)" /></a> &#0160;</span> </p><ul>
+ 
+ <li>A <a href="http://en.wikipedia.org/wiki/POJO">POJO</a> (Plain Old Java Object) is written through a proxy using a hash-based data routing mechanism to be stored in a partition on a Processing Unit. Attributes of the object are used as a key. This is straightforward hash based partitioning like you would use with memcached. </li>
+ <li>You are operating through GigaSpace&#39;s framework/container so they can automatically handle things like messaging, sending change events, replication, failover, master-worker pattern, map-reduce, transactions, parallel processing, parallel query processing, and write-behind to databases. </li>
+ <li>Scaling is accomplished by dividing your objects into more partitions and assigning the partitions to Processing Unit instances which run on nodes-- a scale-out strategy. Objects are kept in RAM and the objects contain both state and behavior. A Service Grid component supports the dynamic creation and termination of Processing Units. </li>
+ </ul>
+ </blockquote> <p>Back to our Twitter app: Given the scalability requirements, we will need to scale both reads and writes, and therefore, an IMDG is a more suitable approach to implementing the blackboard system. </p><p>Now let’s examine how the use of an IMDG as the blackboard system enables us to scale both sending and reading tweets. Let&#39;s start by designing the partitioned cluster. </p> <h2>Designing a partition architecture </h2> <p>One of the main considerations in designing a partition cluster of any kind is determining the <strong>partition key</strong>, such as a Customer ID in a CRM application or a Trade ID in a trading application. At first glance, it sounds like a trivial decision, but choosing the right partitioning key requires a deep understanding of the application usage patterns and data model.&#0160; In the case of Twitter, we could choose to partition the application by the data-type, the user, the tweet itself or the followers. Our first goal is selecting a key that will that will be granular enough to enable scaling the application just by adding more partitions, while making sure that we don&#39;t end up with a key that is too fine-grained -- making it sub-optimal for querying purposes. </p><p>If we use the timestamp key, for example, our application will be optimized for “inserts” (writes), however, even a simple query such “retrieve the tweets of a certain user” will force us to execute an aggregated query against all partitions. Alternatively, if we partition the data based on user-id, we&#39;ll be able to easily spread the load from different users across partitions. Retrieving the tweets of a certain user is going to be resolved in one call to a single partition. We may encounter a problem if a single user generates a significant higher load than average, however, in the case of Twitter, we can assume that this is not very likely. Partitioning by user-id is a good compromise.</p> <h3>Data capacity analysis </h3> <p>With such extreme requirements it is clear that storing all tweets in memory is going to require huge memory capacity. Very quickly this will become economically prohibitive, so we need to devise a scheme in which the IMDG acts as a buffer for most of the load on the system, and then offloads the data and queries to an underlying persistent storage.&#0160; In our Twitter example, it is fair to assume that most real-time queries (those that require fast access to the data) will be resolved in data from the last hour or 24 hours. Queries that require older data will need to hit the database for the initial call. However, subsequent access to fetch new updates should be resolved purely in-memory. </p> <p>Using this approach, we&#39;ll need about 10 servers, each holding 10GB of data in memory to accommodate 24 hours of activity. If we also want to back up the data in memory, we will need double the amount of servers. </p> <h3>Choosing the right eviction policy</h3> <p>It&#39;s reasonable to assume that recent data is accessed most and older data is rarely used. To ensure that we get the maximum hit ratio on our memory front-end, let&#39;s choose a time-based eviction policy, which always holds the most recent updates in memory. When we will reach our memory capacity limit the oldest data will automatically get evicted from memory. The actual window of time in which we will be able to keep in memory is obviously dependent on the size of the cluster. With an IMDG implementation all tweets are stored in a persistent storage, which means that when tweets are evicted they are not deleted from the system.</p> <h2>Scaling tweet writes:</h2> <p>If we select user-id as the partitioning key, each user tweet will be sent to a specific partition. Multiple users may be routed to the same partition. Usually the algorithm to determine which partition fits a certain user is something like:</p> <p class="blockquote" style="margin-left: 40px;"><em>routing-key.hashCode() % #of partitions</em> </p><p>In GigaSpaces, this is done by marking the routing attribute of our tweet class with an <a href="http://www.gigaspaces.com/wiki/display/XAP66/POJO+Support+%28Annotations%2C+gs.xml%29+-+Advanced#POJOSupport%28Annotations%2Cgs.xml%29-Advanced-FieldLevelDecoration@SpaceRouting">@SpaceRouting</a> annotation.</p> <p>The web front-end application will call <em>space.write( new Tweet(..),..)</em>&#0160; to send the tweets. This way there is nothing in our web client code that exposes the fact that the underlying implementation interacts with a cluster of partitions (spaces in GigaSpaces). Those details are abstracted within the space proxy. When the write method is called on the space proxy it parses the field that matches @SpaceRouting from our Tweet() object and uses this field value to calculate the partition it belongs to. It then uses that value to route the Tweet(..) object to the appropriate partition.</p> <p>With this approach, the web application can be written in a very simple way and can interact with the entire cluster as if it was a single server.</p> <p><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef011570111407970b-pi"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9d1e970c-pi" style="display: inline;"><img alt="Natiblog 3" border="0" class="at-xid-6a00d835457b7453ef01156f4e9d1e970c " src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9d1e970c-800wi" title="Natiblog 3" /></a> <br /></a> </p> <p>The data from the memory partitions gets stored asynchronously into a persistent storage. The persistent storage could be a database, but it could also be other things, such as an index search engine based on <a href="http://www.compass-project.org/">Compass/Lucene</a>. </p> <h2>Scaling tweet reads:</h2> <p>To those familiar with messaging system, at first glance Twitter looks like a classic <a href="http://en.wikipedia.org/wiki/Publish/subscribe">publish subscribe</a> application. A closer look, however, reveals that any attempt to implement Twitter with something like a JMS message queue is going to fail in achieving a scalable system. This is especially true if you consider that the system needs to maintain a durable queue for each user. That could easily lead to a scenario in which each tweet is published to thousands of subscribers and every re-tweet can potentially lead to a &quot;message storm&quot;.</p> <p>As <span style="text-decoration: underline;">I discuss above</span><a href="http://natishalom.typepad.com/nati_shaloms_blog/2008/05/twitter-as-an-e.html"></a>, the right way to think about this type of application is as a <a href="http://en.wikipedia.org/wiki/Blackboard_system">blackboard</a> pattern, just as a blackboard (or these days, a whiteboard) is used by a group of people (followers, in the case of Twitter) to share information and collaborate. When someone writes something on the board, everyone sees it and can choose to react. Unlike messaging (take email for example), we don’t need to send separate messages to each subscriber. Instead everyone is looking at the same board. Everything is also copied from the board to paper. When the board runs out of space, we erase it. And we can always page through the paper copy to access the board history.&#0160; </p> <p>In Twitter, this means that each follower that follows a group of people is basically polling for messages posted by those users from the last time he read them. To make things more tangible we can express this type of query with the following SQL syntax:</p><p class="blockquote" style="margin-left: 40px;"> <em>SELECT * FROM Post WHERE UserID=&lt;id&gt; AND PostedOn &gt; &lt;from date&gt;</em><strong>.</strong></p><p><strong> </strong>The <em>&lt;from date&gt;</em> will normally be the last few minutes, if we&#39;re constantly looking for new messages. </p><p>But there&#39;s a caveat. Remember that we partitioned the application by user-id? This means that each user&#39;s tweets are stored in a separate partition. How can we read all users&#39; posts? If we poll for each user individually, we will end up with a lot of network calls. The simplest approach would be to execute one call that looks for ALL the users we&#39;re following and look for updates (new tweets) from those users. The pattern we&#39;ll use to perform such this task is <a href="http://natishalom.typepad.com/nati_shaloms_blog/2008/10/is-mapreduce-going-to-main-stream.html">mapreduce</a>. One way to do that with GigaSpaces is through the <a href="http://www.gigaspaces.com/wiki/display/XAP7/Executors+Component#ExecutorsComponent-DistributedTaskAPI">distributed task API</a>:</p> <p><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01157011c08e970b-pi"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9f3b970c-pi" style="display: inline;"><img alt="Nati blog 4" border="0" class="at-xid-6a00d835457b7453ef01156f4e9f3b970c " src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9f3b970c-800wi" title="Nati blog 4" /></a> <br /></a> </p> <p>The distributed task API is a modern version of the stored procedure. The following snippet shows what such a call would look like:</p> <blockquote> <pre><em>AsyncFuture&lt;Long&gt; future = gigaSpace.execute(new GetTweetsUpdates());<br />long result = future.get(); // result will be the number of primary spaces</em></pre>
+</blockquote>
+
+<p>The GetTweetsUpdates() class contains code that will be injected in each partition and will enable us to look for updates from the users we follow in a single call. Because the call runs in-process, and because the data is stored in-memory, executing such a task is extremely fast compared with the equivalent with database and stored procedure operations. Execution is aggregated to the caller implicitly. The caller can use a <a href="http://www.gigaspaces.com/wiki/display/XAP7/Executors+Component#ExecutorsComponent-BuiltinReducers">reducer</a> to aggregate the results into a single result object.</p>
+
+<h2>Scaling the web front-end</h2>
+
+<p>Nothing really new here. We&#39;ll use a classic web front-end, which is comprised of a load-balancer and a cluster of web servers that act as a front end to our IMDG instances. The web application will use a single cluster-aware IMDG proxy to send new tweet posts. The IMDG proxy will be responsible for mapping the tweet with the actual partition that hosting the tweet. That logic is kept completely out of the application code. This allows us to keep our web tier clean and simple.</p>
+
+<h3>Keeping the web layer stateless to avoid session stickiness</h3>
+
+<p>One common pattern for keeping the web tier scalable is to use a <a href="http://blog.gigaspaces.com/2007/04/06/shared-nothing-architecture-redefined/">Shared-Nothing Architecture</a>, which basically means that the web tier will be stateless. This requires keeping the user session state external to the web-tier. As previously demonstrated, the IMDG can be used as high-performance, scalable data store for maintaining shared session state information. This allows us to avoid session stickiness and to scale the web tier without being locked in to a specific server throughout the entire session, in case the server is over-loaded.</p>
+
+<p>For more information on how to scale the web tier, as well as other important capabilities such as self-healing and auto-scaling, see the following tutorial: <a href="http://www.gigaspaces.com/wiki/display/XAP66/Scaling+Your+Web+Application">Scaling Your Web Application</a>.</p>
+
+<h2>Making it simple and cost-effective using cloud computing</h2>
+
+<p>Twitter is yet another example for a situation in which system load is highly variable and the difference between average load and peak load can be quite significant. In such cases, provisioning our system can be fairly hard and costly. This is where cloud computing and SLA-driven deployments can help us scale on demand and pay only for what we use. </p>
+
+<p>Once we figured out a way to partition the application, it&#39;s going to be much simpler to package the application into self-sufficient units (referred to in GigaSpaces as processing-units) and scale the application simply by adding or removing these units on demand. You can learn more about this <a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/03/its-time-for-auto-scaling-avoid-peak-load-provisioning.html">here</a></p>
+
+<h2>Final words</h2>
+
+<p>Scaling a real-time web application such as Twitter or Facebook introduces unique challenges that are are quite different from those of a &quot;classic&quot; database-centric application. The most profound difference is the fact that unlike with traditional sites, Twitter is a heavy read/write application, and not read-mostly. This seemingly minor difference can break most existing models for web application scalability. Using a combination of memcached + MySQL is not going to cut it for this type of application.&#0160; </p>
+
+<p>The good news is that with the right patterns and set of tools, building a scalable architecture that meets such challenges isn’t that difficult.&#0160; There are already plenty of success stories that demonstrate that, such as the following example from highscalability.com: <a href="http://highscalability.com/handle-1-billion-events-day-using-memory-grid">Handle 1 Billion Events Per Day Using a Memory Grid</a></p>
+
+<p>The proposed architecture is by no means perfect and can be further optimized to meet even better performance and latency, but that will come at the cost of simplicity. I believe that the proposed architecture should get you pretty far as-is. Avoid going through more advanced optimizations until the point they are an absolute must.<span style="font-weight: bold;"><strong> <br /></strong></span></p><p><span style="font-weight: bold;"><strong> </strong><br /></span></p><h2>References</h2>
+
+<ul>
+ <li>
+ <h4><a href="http://vehera.jsn-server7.com/LiddleBlog/?p=315">Twitter getting bigger - Scaling becomes more of an issue</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://gevaperry.typepad.com/main/2009/03/memorybased-architectures-and-the-cloud.html">Memory-Based Architectures and the Cloud</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://highscalability.com/handle-1-billion-events-day-using-memory-grid">Handle 1 Billion Events Per Day Using a Memory Grid</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://highscalability.com/are-cloud-based-memory-architectures-next-big-thing">Are Cloud-Based Memory Architectures the Next Big Thing?</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://www.gigaspaces.com/wiki/display/XAP66/Scaling+Your+Web+Application">Scaling Your Web Application</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://blog.gigaspaces.com/2009/04/02/persistence-on-the-cloud-%e2%80%93-how-and-why/">Persistence on the Cloud – How and Why?</a></h4>
+ </li>
+ <li><strong><a href="http://www.jroller.com/gnirpaz/entry/my_sdc_presentation">Scaling twitter presentation by Guy Nirpaz</a></strong></li>
+</ul>
+		</div>
+		
+					<script src="http://feeds.feedburner.com/~s/NatiShalom?i=http%3A%2F%2Fnatishalom.typepad.com%2Fnati_shaloms_blog%2F2009%2F04%2Fwriting-your-own-scalable-twitter.html" type="text/javascript"></script>
+		
+	</div>
+	<div class="entry-footer">
+			<p class="entry-footer-info">
+				<span class="post-footers">Posted by Nati Shalom at 09:45 PM in <a href="http://natishalom.typepad.com/nati_shaloms_blog/architecture/">Architecture</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/cloud_computing/">Cloud Computing</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/compass/">Compass</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/data-grid/">Data Grid</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/gigaspaces/">GigaSpaces</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/grid/">Grid</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/jinijavaspaces/">Jini/JavaSpaces</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/lucene/">Lucene</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/real-time/">real-time</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/scalability/">scalability</a>, <a href="http://natishalom.typepad.com/nati_shaloms_blog/spacebased_architecture/">Space-Based Architecture</a> </span> <span class="separator">|</span> <a class="permalink" href="http://natishalom.typepad.com/nati_shaloms_blog/2009/04/writing-your-own-scalable-twitter.html">Permalink</a>
+			</p>
+		
+		<!-- technorati tags -->
+
+
+		<!-- post footer links -->
+	<p class="entry-footer-share">
+		<span class="entry-footer-links-digg"><a href="http://digg.com/submit?url=http%3A%2F%2Fnatishalom.typepad.com%2Fnati_shaloms_blog%2F2009%2F04%2Fwriting-your-own-scalable-twitter.html&amp;phase=2" class="share-link share-link-digg">Digg This</a>
+</span> <span class="separator">|</span> <span class="entry-footer-links-delicious"><a href="http://del.icio.us/post" class="share-link share-link-delicious" onclick="window.open('http://del.icio.us/post?v=4&partner=typepad&noui&jump=close&url=http%3A%2F%2Fnatishalom.typepad.com%2Fnati_shaloms_blog%2F2009%2F04%2Fwriting-your-own-scalable-twitter.html&title=Designing%20a%20Scalable%20Twitter', 'delicious', 'toolbar=no,width=700,height=400'); return false;">Save to del.icio.us</a>
+</span>
+	</p>
+
+
+	</div>
+</div>
+
+		<div class="trackbacks">
+		<a id="trackback"></a>
+		<h3 class="trackbacks-header">TrackBack</h3>
+		<div class="trackbacks-info">
+			<p>TrackBack URL for this entry:<br /><span class="trackbacks-link">http://www.typepad.com/services/trackback/6a00d835457b7453ef01156f1ae981970c</span></p>
+			<p>Listed below are links to weblogs that reference <a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/04/writing-your-own-scalable-twitter.html">Designing a Scalable Twitter</a>:</p>
+		</div>
+		<div class="trackbacks-content">
+			
+		</div>
+	</div>
+
+
+
+
+
+
+
+        
+        <a id="comments"></a>
+        <h3 class="comments-header">Comments</h3>
+<div class="comments-content">
+        <div id="tpc_thread"></div>
+        <div style="display:none;" id="tpc_post_title">Designing a Scalable Twitter</div>
+        <div style="display:none;" id="tpc_post_message"><p><a href="http://www.jroller.com/gnirpaz/">Guy Nirpaz</a>, <a href="http://uri-cohen.blogspot.com/">Uri Cohen</a> and <a href="http://www.kimchy.org/">Shay Banon</a> came up with an interesting exercise as part of the recent partner training that took place at the GigaSpaces office. In this exercise, the students were asked to come up with a scalable design for Twitter, using Space-Based Architecture.</p> <p>There are some interesting scalability lessons from this exercise, which are applicable to anyone looking to implement new-style real-time web applications such as the ones used for social networking.</p> <p>In this post I&#39;ll&#0160; try to summarize the main patterns to put into place and considerations to make when designing such a scalable architecture<span style="font-weight: bold;">.</span></p><h2>Background:</h2> <p>For those of you who are not yet familiar with the service, Twitter is sort of a SMS-service meets discussion board.&#0160; You can post short messages (up to 140 characters) that can be shared with a group of subscribers that are referred to as &quot;followers&quot;. The main difference between twitter and other messaging applications is that both SMS and Instant Messaging (IM) applications were designed primarily for one-on-one communications whereis Twitter was designed primarily for broadcast communications (publish/subscribe, or pub/sub). Another aspect that is special about Twitter is that by default anyone can follow anyone else. In other words, it was designed for open communications, not private, as were IM and SMS.</p><h2>What are Twitter&#39;s scalability challenges?</h2> <p>1. Sending a tweet (a message on Twitter is known as a &#39;tweet&#39;) -– The challenge is how to handle an ever-growing volume of tweets and re-tweets and responses that can lead to a viral &quot;message storm&quot;</p> <p>2. Reading tweets – The challenge is how to handle a large number of concurrent users that continually “listen” for tweets from users (or topics) they follow.</p> <h2>Designing A Scalable Twitter</h2> <h3>Choosing the right scalability patterns</h3> <p>Almost every challenge in software architecture has its roots in one of the existing patterns. So the simplest course is to start by looking for those patterns, and choosing the right patterns to scale the application. Looking at <a href="http://www.typepad.com/site/blogs/6a00d835457b7453ef00d835457b7553ef/post/6a00d835457b7453ef01156f1ae981970c/edit">many other scalable architectures</a>, we&#39;ll begin with a <a href="http://en.wikipedia.org/wiki/Partition">partitioning</a> pattern as the core design principle. By partitioning our Twitter-like application we&#39;ll spread the load across a cluster of servers and scale by simply adding more servers (i.e., partitions).&#0160; Another important architectural observation about Twitter is that it doesn’t fit into the classic database-centric design that most web applications do. On the flip side, it doesn’t fit well with a messaging-centric design (pub/sub) either. It is a combination of the two. </p> <p>A pattern that is suitable for this type of collaborative messaging is known as a <a href="http://en.wikipedia.org/wiki/Blackboard_system">blackboard pattern</a>.&#0160; In our design, we will use those two design patterns -- partitioning and blackboard -- as the foundation for our scalable Twitter application. With the foundation in place, let’s list the requirements and examine how these patterns can be used to scale the app.</p> <h3>Scalability Requirements</h3><p> We&#39;ll assume a relatively extreme scaling requirement:</p><ul>
+<li>Tweet Volume: 10 billion tweets per day </li>
+<li>Tweet Storage: 100 Gigabytes per day (with 10:1 compression) </li>
+</ul>
+<p>Additional assumptions:</p><ul>
+<li>Tweets are limited to 140 characters</li>
+<li>Tweets are immutable, i.e., there are no updates, only inserts</li>
+<li>Twitter limits client applications to 70 requests per hour</li>
+</ul>
+<p>Now that we have the foundational patterns and clear requirements, we can design the architecture. We&#39;ll start first with the blackboard system.</p> <h2>Using an In-Memory Data Grid (IMDG) as a Blackboard System</h2> <p>The are several approaches to building a blackboard system. To maximize performance and scalability, we&#39;ll store the data in memory, thus avoiding disk I/O, which is often the main cause for contention. For years, Java has provided a model for designing blackboard systems known as <a href="http://en.wikipedia.org/wiki/Tuple_space">JavaSpaces</a>. More recently, distributed caching has become popular and can provide similar capabilities to those of JavaSpaces. Let&#39;s examine two popular distributed caching approaches for our blackboard system: </p> <ol>
+<li>Simple read-mostly caching using <a href="http://www.danga.com/memcached/">memcached</a> </li>
+<li>Read/write caching, also known as an In-Memory Data Grid (IMDG)</li>
+</ol>
+ <h3>Choosing between memcached and an IMDG</h3> <p>Memcached enables us to to store the data (tweets) in a distributed memory set and read it in a scalable fashion. Having said that, be aware that memcached is not transactionally-safe and is not designed for reliability (i.e., it doesn’t support fail-over and high availability). That means that if we use memcached or something similar, we will have to use a database as the back-end. Every tweet posted will have to be written to both memcached and the database in a <strong>synchronous</strong> fashion to ensure that no tweet will be lost. This approach may be good enough for scaling read access, however, for writes and updates it offers limited scalability.</p> <p>Unlike memcached, which was designed for simple read-mostly caching, <a href="http://en.wikipedia.org/wiki/Data_grid">In-Memory Data Grids</a>&#0160; are designed for handling a read/write scenario, and can therefore act as the system-of-record for both write and read operations. We can still use a database for long-term persistence, but because the IMDG maintains its reliability purely in memory, we can write and update the database <strong>asynchronously</strong> and avoid hitting the database bottleneck.</p> <p>Todd Hoff, author of <a href="http://www.highscalability.com">highscalability.com</a> wrote an interesting summary that covers the different products in this space in a recent post:&#0160; <a href="http://highscalability.com/are-cloud-based-memory-architectures-next-big-thing">Are Cloud Based Memory Architectures the Next Big</a> Thing?</p><p> Todd provide a clear explanation of how an IMDG works (using GigaSpaces):</p> <br /> <blockquote><p><span style="text-decoration: underline;"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01157044cd73970b-pi" style="display: inline;"><img alt="Nati blog 1 (2)" border="0" class="at-xid-6a00d835457b7453ef01157044cd73970b " src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01157044cd73970b-800wi" title="Nati blog 1 (2)" /></a> </span> <br /><span style="text-decoration: underline;"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4eabfc970c-pi" style="display: inline;"><img alt="Natiblog 2 (2)" border="0" class="at-xid-6a00d835457b7453ef01156f4eabfc970c" src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4eabfc970c-800wi" title="Natiblog 2 (2)" /></a> &#0160;</span> </p><ul>
+ 
+ <li>A <a href="http://en.wikipedia.org/wiki/POJO">POJO</a> (Plain Old Java Object) is written through a proxy using a hash-based data routing mechanism to be stored in a partition on a Processing Unit. Attributes of the object are used as a key. This is straightforward hash based partitioning like you would use with memcached. </li>
+ <li>You are operating through GigaSpace&#39;s framework/container so they can automatically handle things like messaging, sending change events, replication, failover, master-worker pattern, map-reduce, transactions, parallel processing, parallel query processing, and write-behind to databases. </li>
+ <li>Scaling is accomplished by dividing your objects into more partitions and assigning the partitions to Processing Unit instances which run on nodes-- a scale-out strategy. Objects are kept in RAM and the objects contain both state and behavior. A Service Grid component supports the dynamic creation and termination of Processing Units. </li>
+ </ul>
+ </blockquote> <p>Back to our Twitter app: Given the scalability requirements, we will need to scale both reads and writes, and therefore, an IMDG is a more suitable approach to implementing the blackboard system. </p><p>Now let’s examine how the use of an IMDG as the blackboard system enables us to scale both sending and reading tweets. Let&#39;s start by designing the partitioned cluster. </p> <h2>Designing a partition architecture </h2> <p>One of the main considerations in designing a partition cluster of any kind is determining the <strong>partition key</strong>, such as a Customer ID in a CRM application or a Trade ID in a trading application. At first glance, it sounds like a trivial decision, but choosing the right partitioning key requires a deep understanding of the application usage patterns and data model.&#0160; In the case of Twitter, we could choose to partition the application by the data-type, the user, the tweet itself or the followers. Our first goal is selecting a key that will that will be granular enough to enable scaling the application just by adding more partitions, while making sure that we don&#39;t end up with a key that is too fine-grained -- making it sub-optimal for querying purposes. </p><p>If we use the timestamp key, for example, our application will be optimized for “inserts” (writes), however, even a simple query such “retrieve the tweets of a certain user” will force us to execute an aggregated query against all partitions. Alternatively, if we partition the data based on user-id, we&#39;ll be able to easily spread the load from different users across partitions. Retrieving the tweets of a certain user is going to be resolved in one call to a single partition. We may encounter a problem if a single user generates a significant higher load than average, however, in the case of Twitter, we can assume that this is not very likely. Partitioning by user-id is a good compromise.</p> <h3>Data capacity analysis </h3> <p>With such extreme requirements it is clear that storing all tweets in memory is going to require huge memory capacity. Very quickly this will become economically prohibitive, so we need to devise a scheme in which the IMDG acts as a buffer for most of the load on the system, and then offloads the data and queries to an underlying persistent storage.&#0160; In our Twitter example, it is fair to assume that most real-time queries (those that require fast access to the data) will be resolved in data from the last hour or 24 hours. Queries that require older data will need to hit the database for the initial call. However, subsequent access to fetch new updates should be resolved purely in-memory. </p> <p>Using this approach, we&#39;ll need about 10 servers, each holding 10GB of data in memory to accommodate 24 hours of activity. If we also want to back up the data in memory, we will need double the amount of servers. </p> <h3>Choosing the right eviction policy</h3> <p>It&#39;s reasonable to assume that recent data is accessed most and older data is rarely used. To ensure that we get the maximum hit ratio on our memory front-end, let&#39;s choose a time-based eviction policy, which always holds the most recent updates in memory. When we will reach our memory capacity limit the oldest data will automatically get evicted from memory. The actual window of time in which we will be able to keep in memory is obviously dependent on the size of the cluster. With an IMDG implementation all tweets are stored in a persistent storage, which means that when tweets are evicted they are not deleted from the system.</p> <h2>Scaling tweet writes:</h2> <p>If we select user-id as the partitioning key, each user tweet will be sent to a specific partition. Multiple users may be routed to the same partition. Usually the algorithm to determine which partition fits a certain user is something like:</p> <p class="blockquote" style="margin-left: 40px;"><em>routing-key.hashCode() % #of partitions</em> </p><p>In GigaSpaces, this is done by marking the routing attribute of our tweet class with an <a href="http://www.gigaspaces.com/wiki/display/XAP66/POJO+Support+%28Annotations%2C+gs.xml%29+-+Advanced#POJOSupport%28Annotations%2Cgs.xml%29-Advanced-FieldLevelDecoration@SpaceRouting">@SpaceRouting</a> annotation.</p> <p>The web front-end application will call <em>space.write( new Tweet(..),..)</em>&#0160; to send the tweets. This way there is nothing in our web client code that exposes the fact that the underlying implementation interacts with a cluster of partitions (spaces in GigaSpaces). Those details are abstracted within the space proxy. When the write method is called on the space proxy it parses the field that matches @SpaceRouting from our Tweet() object and uses this field value to calculate the partition it belongs to. It then uses that value to route the Tweet(..) object to the appropriate partition.</p> <p>With this approach, the web application can be written in a very simple way and can interact with the entire cluster as if it was a single server.</p> <p><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef011570111407970b-pi"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9d1e970c-pi" style="display: inline;"><img alt="Natiblog 3" border="0" class="at-xid-6a00d835457b7453ef01156f4e9d1e970c " src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9d1e970c-800wi" title="Natiblog 3" /></a> <br /></a> </p> <p>The data from the memory partitions gets stored asynchronously into a persistent storage. The persistent storage could be a database, but it could also be other things, such as an index search engine based on <a href="http://www.compass-project.org/">Compass/Lucene</a>. </p> <h2>Scaling tweet reads:</h2> <p>To those familiar with messaging system, at first glance Twitter looks like a classic <a href="http://en.wikipedia.org/wiki/Publish/subscribe">publish subscribe</a> application. A closer look, however, reveals that any attempt to implement Twitter with something like a JMS message queue is going to fail in achieving a scalable system. This is especially true if you consider that the system needs to maintain a durable queue for each user. That could easily lead to a scenario in which each tweet is published to thousands of subscribers and every re-tweet can potentially lead to a &quot;message storm&quot;.</p> <p>As <span style="text-decoration: underline;">I discuss above</span><a href="http://natishalom.typepad.com/nati_shaloms_blog/2008/05/twitter-as-an-e.html"></a>, the right way to think about this type of application is as a <a href="http://en.wikipedia.org/wiki/Blackboard_system">blackboard</a> pattern, just as a blackboard (or these days, a whiteboard) is used by a group of people (followers, in the case of Twitter) to share information and collaborate. When someone writes something on the board, everyone sees it and can choose to react. Unlike messaging (take email for example), we don’t need to send separate messages to each subscriber. Instead everyone is looking at the same board. Everything is also copied from the board to paper. When the board runs out of space, we erase it. And we can always page through the paper copy to access the board history.&#0160; </p> <p>In Twitter, this means that each follower that follows a group of people is basically polling for messages posted by those users from the last time he read them. To make things more tangible we can express this type of query with the following SQL syntax:</p><p class="blockquote" style="margin-left: 40px;"> <em>SELECT * FROM Post WHERE UserID=&lt;id&gt; AND PostedOn &gt; &lt;from date&gt;</em><strong>.</strong></p><p><strong> </strong>The <em>&lt;from date&gt;</em> will normally be the last few minutes, if we&#39;re constantly looking for new messages. </p><p>But there&#39;s a caveat. Remember that we partitioned the application by user-id? This means that each user&#39;s tweets are stored in a separate partition. How can we read all users&#39; posts? If we poll for each user individually, we will end up with a lot of network calls. The simplest approach would be to execute one call that looks for ALL the users we&#39;re following and look for updates (new tweets) from those users. The pattern we&#39;ll use to perform such this task is <a href="http://natishalom.typepad.com/nati_shaloms_blog/2008/10/is-mapreduce-going-to-main-stream.html">mapreduce</a>. One way to do that with GigaSpaces is through the <a href="http://www.gigaspaces.com/wiki/display/XAP7/Executors+Component#ExecutorsComponent-DistributedTaskAPI">distributed task API</a>:</p> <p><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01157011c08e970b-pi"><a href="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9f3b970c-pi" style="display: inline;"><img alt="Nati blog 4" border="0" class="at-xid-6a00d835457b7453ef01156f4e9f3b970c " src="http://natishalom.typepad.com/.a/6a00d835457b7453ef01156f4e9f3b970c-800wi" title="Nati blog 4" /></a> <br /></a> </p> <p>The distributed task API is a modern version of the stored procedure. The following snippet shows what such a call would look like:</p> <blockquote> <pre><em>AsyncFuture&lt;Long&gt; future = gigaSpace.execute(new GetTweetsUpdates());<br />long result = future.get(); // result will be the number of primary spaces</em></pre>
+</blockquote>
+
+<p>The GetTweetsUpdates() class contains code that will be injected in each partition and will enable us to look for updates from the users we follow in a single call. Because the call runs in-process, and because the data is stored in-memory, executing such a task is extremely fast compared with the equivalent with database and stored procedure operations. Execution is aggregated to the caller implicitly. The caller can use a <a href="http://www.gigaspaces.com/wiki/display/XAP7/Executors+Component#ExecutorsComponent-BuiltinReducers">reducer</a> to aggregate the results into a single result object.</p>
+
+<h2>Scaling the web front-end</h2>
+
+<p>Nothing really new here. We&#39;ll use a classic web front-end, which is comprised of a load-balancer and a cluster of web servers that act as a front end to our IMDG instances. The web application will use a single cluster-aware IMDG proxy to send new tweet posts. The IMDG proxy will be responsible for mapping the tweet with the actual partition that hosting the tweet. That logic is kept completely out of the application code. This allows us to keep our web tier clean and simple.</p>
+
+<h3>Keeping the web layer stateless to avoid session stickiness</h3>
+
+<p>One common pattern for keeping the web tier scalable is to use a <a href="http://blog.gigaspaces.com/2007/04/06/shared-nothing-architecture-redefined/">Shared-Nothing Architecture</a>, which basically means that the web tier will be stateless. This requires keeping the user session state external to the web-tier. As previously demonstrated, the IMDG can be used as high-performance, scalable data store for maintaining shared session state information. This allows us to avoid session stickiness and to scale the web tier without being locked in to a specific server throughout the entire session, in case the server is over-loaded.</p>
+
+<p>For more information on how to scale the web tier, as well as other important capabilities such as self-healing and auto-scaling, see the following tutorial: <a href="http://www.gigaspaces.com/wiki/display/XAP66/Scaling+Your+Web+Application">Scaling Your Web Application</a>.</p>
+
+<h2>Making it simple and cost-effective using cloud computing</h2>
+
+<p>Twitter is yet another example for a situation in which system load is highly variable and the difference between average load and peak load can be quite significant. In such cases, provisioning our system can be fairly hard and costly. This is where cloud computing and SLA-driven deployments can help us scale on demand and pay only for what we use. </p>
+
+<p>Once we figured out a way to partition the application, it&#39;s going to be much simpler to package the application into self-sufficient units (referred to in GigaSpaces as processing-units) and scale the application simply by adding or removing these units on demand. You can learn more about this <a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/03/its-time-for-auto-scaling-avoid-peak-load-provisioning.html">here</a></p>
+
+<h2>Final words</h2>
+
+<p>Scaling a real-time web application such as Twitter or Facebook introduces unique challenges that are are quite different from those of a &quot;classic&quot; database-centric application. The most profound difference is the fact that unlike with traditional sites, Twitter is a heavy read/write application, and not read-mostly. This seemingly minor difference can break most existing models for web application scalability. Using a combination of memcached + MySQL is not going to cut it for this type of application.&#0160; </p>
+
+<p>The good news is that with the right patterns and set of tools, building a scalable architecture that meets such challenges isn’t that difficult.&#0160; There are already plenty of success stories that demonstrate that, such as the following example from highscalability.com: <a href="http://highscalability.com/handle-1-billion-events-day-using-memory-grid">Handle 1 Billion Events Per Day Using a Memory Grid</a></p>
+
+<p>The proposed architecture is by no means perfect and can be further optimized to meet even better performance and latency, but that will come at the cost of simplicity. I believe that the proposed architecture should get you pretty far as-is. Avoid going through more advanced optimizations until the point they are an absolute must.<span style="font-weight: bold;"><strong> <br /></strong></span></p><p><span style="font-weight: bold;"><strong> </strong><br /></span></p><h2>References</h2>
+
+<ul>
+ <li>
+ <h4><a href="http://vehera.jsn-server7.com/LiddleBlog/?p=315">Twitter getting bigger - Scaling becomes more of an issue</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://gevaperry.typepad.com/main/2009/03/memorybased-architectures-and-the-cloud.html">Memory-Based Architectures and the Cloud</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://highscalability.com/handle-1-billion-events-day-using-memory-grid">Handle 1 Billion Events Per Day Using a Memory Grid</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://highscalability.com/are-cloud-based-memory-architectures-next-big-thing">Are Cloud-Based Memory Architectures the Next Big Thing?</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://www.gigaspaces.com/wiki/display/XAP66/Scaling+Your+Web+Application">Scaling Your Web Application</a></h4>
+ </li>
+ <li>
+ <h4><a href="http://blog.gigaspaces.com/2009/04/02/persistence-on-the-cloud-%e2%80%93-how-and-why/">Persistence on the Cloud – How and Why?</a></h4>
+ </li>
+ <li><strong><a href="http://www.jroller.com/gnirpaz/entry/my_sdc_presentation">Scaling twitter presentation by Guy Nirpaz</a></strong></li>
+</ul></div>
+        <script type="text/javascript">
+            var TPConnect = {};
+                TPConnect.tpc_url = 'http://natishalom.typepad.com/nati_shaloms_blog/2009/04/writing-your-own-scalable-twitter.html';
+                TPConnect.tpc_title = document.getElementById('tpc_post_title').innerHTML;
+                TPConnect.tpc_message = document.getElementById('tpc_post_message').innerHTML;
+        </script>
+
+        <script type="text/javascript" src="http://profile.typepad.com/services/embed/tpc/6a00d835457b7453ef00d835457b7553ef/embed.js?asset_id=6a00d835457b7453ef01156f1ae981970c"></script>
+    <script type="text/javascript" src="http://static.typepad.com/.shared/js/profile/blogside.js"></script>
+        <noscript><a href="?asset_id=6a00d835457b7453ef01156f1ae981970c">View the entire comment thread.</a></noscript>
+</div>
+
+        	
+
+
+						</div>
+					</div>
+					<div id="beta">
+						<div id="beta-inner" class="pkg">
+							
+<!-- sidebar -->
+
+
+<div class="module-custom_html module">
+    <div class="module-content">
+<!-- start Mixpanel --><script type="text/javascript">var mpq=[];mpq.push(["init","9a35349a514bf0025b50be2e59e2f2db"]);(function(){var b,a,e,d,c;b=document.createElement("script");b.type="text/javascript";b.async=true;b.src=(document.location.protocol==="https:"?"https:":"http:")+"//api.mixpanel.com/site_media/js/api/mixpanel.js";a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(b,a);e=function(f){return function(){mpq.push([f].concat(Array.prototype.slice.call(arguments,0)))}};d=["init","track","track_links","track_forms","register","register_once","identify","name_tag","set_config"];for(c=0;c<d.length;c++){mpq[d[c]]=e(d[c])}})();
+</script><!-- end Mixpanel -->
+    </div>
+</div>
+<!-- Blog Search Module -->
+<div class="module-search module">
+    <h2 class="module-header">Search</h2>
+    <div class="module-content">
+        <form id="search-blog" method="get" action="http://natishalom.typepad.com/.services/blog/6a00d835457b7453ef00d835457b7553ef/search">
+            <input type="search" name="filter.q" results="5" value="" />
+            <input type="submit" value="Search" />
+        </form>
+    </div>
+</div>
+<!-- END Blog Search Module -->
+<!-- about page link -->
+<div class="module-about module">
+	<h2 class="module-header"><a
+		href="http://natishalom.typepad.com/about.html">About</a></h2>
+</div>
+<!-- user photo -->
+	<div class="module-photo module">
+		<div class="module-content"><img src="http://natishalom.typepad.com/.a/6a00d835457b7453ef00e54ff2ce528833-150wi" alt="My Photo" /></div>
+	</div>
+
+<div class="module-widget module" id="widget-TweetMeme_tweetmeme">
+	<div class="module-content">
+    	<script type="text/javascript" src="http://tweetmeme.com/i/scripts/button.js"></script>
+	</div>
+</div><div class="module-custom_html module">
+    <div class="module-content">
+<a href="http://websphere.sys-con.com/node/1505800">
+<img class="asset  asset-image at-xid-6a00d835457b7453ef013488e2fdf0970c" alt="Top 50 226-small" title="Top 50 226-small" src="http://natishalom.typepad.com/.a/6a00d835457b7453ef013488e2fdf0970c-800wi" _mce_src="http://natishalom.typepad.com/.a/6a00d835457b7453ef013488e2fdf0970c-800wi" border="0">
+</a>
+    </div>
+</div>
+<div class="module-widget module" id="widget-Twitter_Twitter_Updates">
+	<div class="module-content">
+    	<div id="twitter_div">
+<h2 style="margin:0" class="module-header">Twitter Updates</h2>
+<ul class="module-list" id="twitter_update_list"></ul>
+<a href="http://twitter.com/natishalom" id="twitter-link" style="display:block;text-align:right;">follow me on Twitter</a>
+</div>
+<script type="text/javascript" src="http://twitter.com/javascripts/typepad.js"></script>
+<script type="text/javascript" src="http://twitter.com/statuses/user_timeline/natishalom.json?callback=twitterCallback2&amp;count=5"></script>
+	</div>
+</div><div class="module-widget module" id="widget-FEEDJIT_feedjit_pop1">
+	<div class="module-content">
+    	<script type="text/javascript" src="http://feedjit.com/popPages/?bc=FFFFFF&amp;tc=494949&amp;brd1=336699&amp;lnk=494949&amp;hc=336699&amp;ww=160"></script><noscript><a href="http://feedjit.com/">Feedjit Live Blog Stats</a></noscript>
+	</div>
+</div><div class="module-syndicate module">
+	<div class="module-content">
+		<a href="http://natishalom.typepad.com/nati_shaloms_blog/atom.xml">Subscribe to this blog's feed</a>
+	</div>
+</div>
+	<div class="module-archives module">
+		<h2 class="module-header">Recent Posts</h2>
+		<div class="module-content">
+			<ul class="module-list">
+														
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach.html">Real Time Analytics for Big Data: An Alternative Approach</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach-to-facebooks-new-realtime-analytics-system.html">Real Time analytics for Big Data: Facebook's New Realtime Analytics System</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/06/readwrite-scale-without-complete-re-write.html">Read/write scale without complete re-write</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/05/citrix-openstack.html">GigaSpaces Citrix integration on top of OpenStack</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/04/paas-on-openstack.html">PaaS on OpenStack</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/04/gigaspaces-openstack-explained.html">GigaSpaces OpenStack Explained</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/04/multi-tenancy-emulation-or-the-real-thingmy-take.html">Multi-tenancy: emulation or the real thing? - My Take</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/04/scaling-searscom-social-ecommerce-architecture-case-study.html">Scaling Social Ecommerce: Architecture Case study</a></li>
+					
+														<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/03/when-big-it-meets-big-web.html">When Big-IT meets Big-Web</a></li>
+					
+				
+			</ul>
+		</div>
+	</div>
+<div class="module-recent-comments module">
+	<h2 class="module-header">Recent Comments</h2>
+	<div class="module-content">
+		<ul class="module-list">
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/06/google-app-engine-plus-amazon-aws-best-of-both-worlds.html?cid=6a00d835457b7453ef0154355a3642970c#comment-6a00d835457b7453ef0154355a3642970c">Buy Google +1</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/06/google-app-engine-plus-amazon-aws-best-of-both-worlds.html">Google App Engine plus Amazon AWS: Best of both worlds</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/09/big-data-application-platform.html?cid=6a00d835457b7453ef015435482b7c970c#comment-6a00d835457b7453ef015435482b7c970c">Sebastian</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/09/big-data-application-platform.html">Big Data Application Platform</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/09/big-data-application-platform.html?cid=6a00d835457b7453ef014e8b5416cd970d#comment-6a00d835457b7453ef014e8b5416cd970d">Nati Shalom</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/09/big-data-application-platform.html">Big Data Application Platform</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/09/big-data-application-platform.html?cid=6a00d835457b7453ef014e8b535eae970d#comment-6a00d835457b7453ef014e8b535eae970d">Vladimir Rodionov</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/09/big-data-application-platform.html">Big Data Application Platform</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2008/11/the-impact-of-cloud-computing-on-buy-vs-build-behaviour.html?cid=6a00d835457b7453ef01539119844e970b#comment-6a00d835457b7453ef01539119844e970b">Managed Services Toronto</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2008/11/the-impact-of-cloud-computing-on-buy-vs-build-behaviour.html">The impact of cloud computing on build vs. buy behaviour</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2007/12/middleware-virt.html?cid=6a00d835457b7453ef015391183602970b#comment-6a00d835457b7453ef015391183602970b">IT Consulting Toronto </a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2007/12/middleware-virt.html">The Missing Piece in Cloud Computing: Middleware Virtualization</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/06/gigaspaces-launches-a-new-version-of-its-cloud-computing-framework.html?cid=6a00d835457b7453ef015391182d63970b#comment-6a00d835457b7453ef015391182d63970b">IT Consulting Toronto </a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2009/06/gigaspaces-launches-a-new-version-of-its-cloud-computing-framework.html">GigaSpaces Launches a New Version of its Cloud Computing Framework</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach-to-facebooks-new-realtime-analytics-system.html?cid=6a00d835457b7453ef01543444ce05970c#comment-6a00d835457b7453ef01543444ce05970c">Real-time Web Analytics</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach-to-facebooks-new-realtime-analytics-system.html">Real Time analytics for Big Data: Facebook's New Realtime Analytics System</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach.html?cid=6a00d835457b7453ef0153906c6621970b#comment-6a00d835457b7453ef0153906c6621970b">Nati Shalom</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach.html">Real Time Analytics for Big Data: An Alternative Approach</a>
+			</li>
+			<li class="module-list-item">
+				<a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach.html?cid=6a00d835457b7453ef015390637610970b#comment-6a00d835457b7453ef015390637610970b">Sudhan S</a> on <a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/real-time-analytics-for-big-data-an-alternative-approach.html">Real Time Analytics for Big Data: An Alternative Approach</a>
+			</li>
+		</ul>
+	</div>
+</div>	<div class="module-archives module">
+		<h2 class="module-header"><a href="http://natishalom.typepad.com/nati_shaloms_blog/archives.html">Archives</a></h2>
+		<div class="module-content">
+			<ul class="module-list">
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/09/index.html">September 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/07/index.html">July 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/06/index.html">June 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/05/index.html">May 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/04/index.html">April 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/03/index.html">March 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/02/index.html">February 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2011/01/index.html">January 2011</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2010/12/index.html">December 2010</a></li>
+									<li class="module-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/2010/11/index.html">November 2010</a></li>
+				
+			</ul>
+		</div>
+	</div>
+
+<div class="module-typelist module">
+	<h2 class="module-header">Favorite Links</h2>
+	<div class="module-content">
+		<ul class="module-list">
+							<li class="module-list-item"><a title="" href="http://www.Grid.org.il">The Israeli Association of Grid Technologies</a></li>
+							<li class="module-list-item"><a title="" href="http://www.springframework.org/">The Spring Framework</a></li>
+							<li class="module-list-item"><a title="" href="http://www.mulesource.com/">MuleSource</a></li>
+							<li class="module-list-item"><a title="" href="http://www.gigaspaces.com">GigaSpaces Technologies</a></li>
+							<li class="module-list-item"><a title="skilled, experienced and equipped, Internet Marketing Specialist." href="http://www.seo-touch.co.il">SEO Expert</a></li>
+			
+		</ul>
+	</div>
+</div>
+
+<div class="module-custom_html module">
+    <div class="module-content">
+<!-- Include required JS files -->
+<script type="text/javascript" src="http://natishalom.typepad.com/syntaxhighlighter/shCore.js"/>
+
+<!-- At least one brush, here we choose Java.-->
+<!-- You need to include a brush for every language you want to highlight -->
+<script type="text/javascript" src="http://natishalom.typepad.com/syntaxhighlighter/shBrushJava.js"/>
+
+<!-- Include *at least* the core style and default theme -->
+<!-- You can choose a different theme -->
+<link href="http://natishalom.typepad.com/syntaxhighlighter/shCore.css" rel="stylesheet" type="text/css" >
+<link href="http://natishalom.typepad.com/syntaxhighlighter/shThemeDefault.css" rel="stylesheet" type="text/css" >
+
+<!-- Important options, and finally the main call -->
+<script type="text/javascript">
+ SyntaxHighlighter.config.tagName = "code" // use <code> tags
+ SyntaxHighlighter.config.stripBrs = true  // disregard trailing 
+ SyntaxHighlighter.all()
+</script>
+    </div>
+</div>
+<div class="module-widget module" id="widget-Snap_Shots_shots">
+	<div class="module-content">
+    	<script type="text/javascript" src="http://shots.snap.com/ss/f6c073c3f42ebbe0c242e5088bd86288/snap_shots.js"></script>
+	</div>
+</div><div class="module-custom_html module">
+    <div class="module-content">
+<a href="http://mixpanel.com/f/partner"><img src="http://mixpanel.com/site_media/images/partner/badge_blue.png" alt="Web Analytics" /></a>
+    </div>
+</div>
+
+
+
+
+
+						</div>
+					</div>
+				</div>
+			</div>
+			
+<!-- footer -->
+<div id="footer">
+	<div id="footer-inner">
+		<ul class="footer-list pkg">
+			<li class="footer-list-item"><a href="http://natishalom.typepad.com/nati_shaloms_blog/">Nati Shalom's Blog</a></li>
+			<li class="last-footer-list-item footer-list-item"><a href="http://www.typepad.com/">Powered by TypePad</a></li>
+		</ul>
+	</div>
+</div>
+
+		</div>
+	</div>
+	
+
+<script type="text/javascript">
+<!--
+var extra_happy = Math.floor(1000000000 * Math.random());
+document.write('<img src="http://www.typepad.com/t/stats?blog_id=1309908&amp;user_id=2453040&amp;page=' + escape(location.href) + '&amp;referrer=' + escape(document.referrer) + '&amp;i=' + extra_happy + '" width="1" height="1" alt="" style="position: absolute; top: 0; left: 0;" />');
+// -->
+</script>
+
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try{
+    var pageTracker = _gat._getTracker("UA-8051647-1");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
+<!-- Start Quantcast tag -->
+<script type="text/javascript" src="http://edge.quantserve.com/quant.js"></script>
+<script type="text/javascript">_qoptions = { tags:"typepad.core" }; _qacct="p-fcYWUmj5YbYKM"; quantserve();</script>
+<noscript>
+<a href="http://www.quantcast.com/p-fcYWUmj5YbYKM" target="_blank"><img src="http://pixel.quantserve.com/pixel/p-fcYWUmj5YbYKM.gif?tags=typepad.core" style="display: none" border="0" height="1" width="1" alt="Quantcast"/></a>
+</noscript>
+<!-- End Quantcast tag -->
+
+<script type="text/javascript">
+var captchaImgAttempts = 0;
+var allowAnonComments = '0';
+var registrationRequired = 0;
+var registrationOptional = 1;
+var emailRequired = 1;
+var useAvatars = 1;
+
+var showSignInMessaging = 0;
+var jsonURL = "/.services/json-rpc";
+
+var captchaSrc = "/.services/captcha?code_encrypted=";
+var alertCommentCannotBeBlank = "You can not leave an empty comment. Please enter some text in the Comment field.";
+var alertEditingExpired = "Sorry, you're no longer allowed to edit this comment. You may have taken too much time before submitting your edit or someone may have already replied to it.";
+
+var alertAuthorCannotBeBlank = "Name must not be blank.";
+var alertEmailCannotBeBlank = "Email Address must not be blank.";
+var alertAuthorAndEmailCannotBeBlank = "Name and email address are both required!";
+var alertEmailIsInvalid = "The Email Address you entered is invalid. Please enter a valid email address.";
+var alertUnauthorizedAction = "The comments on this post are closed.";
+var msgPostReplyTo = "Reply to ";  
+var msgInReplyTo = "In reply to ";
+var msgPostAComment = "Post a comment ";
+var atpCommentsPath = "/.shared/js/atpcomments_yui.js?v=5";
+var hasChanged = 0;
+var hostName = ".typepad.com";
+var tp_comment_token = "1316655067-edea3830992ad481bf1e243070c7b8bd55f9aab5:c0ZMQn2pEuYDKfuI";
+
+var isPage = 0;
+var blog_xid = "6a00d835457b7453ef00d835457b7553ef";
+var xid = "";
+var injectCode = '<div id=\"comment-preview\" class=\"hiddenBox\">\n\t<h3 id=\"header-verify-comment\" class=\"comments-header hiddenBox\">Verify your Comment<\/h3>\n    <h3 id=\"header-preview-comment\" class=\"comments-header hiddenBox\">Previewing your Comment<\/h3>\n\t<div class=\"comments-content\">\n\t\t<div class=\"comment comment-has-avatar\">\n\t\t\t<div id=\"comment-preview-content\" class=\"comment-content\">\n\t\t\t<\/div>\n\t\t\t<p class=\"comment-footer\">\n\t\t\t\tPosted by: \n\t\t\t\t<span id=\"comment-preview-author\"><\/span>&nbsp;|&nbsp;<span id=\"comment-preview-datetime\"><\/span>\n\t\t\t<\/p>\n\t\t<\/div>\n\t<\/div>\n<\/div>\n<div id=\"comment-preview-confirmation\" class=\"hiddenBox yellowBox\">\n    <p>This is only a preview. Your comment has not yet been posted.<\/p>\n   \t<form id=\"comment-preview-form\"\n   \t\tmethod=\"post\"\n   \t\tonsubmit=\"atpComments.interceptPost(); return false;\">\n\t\t<input type=\"submit\" name=\"post\" id=\"comment-confirm-post\" value=\"&nbsp;Post&nbsp;\" onclick=\"atpComments.interceptPost(); return false;\"/>\t\t    \n\t\t<input type=\"submit\" name=\"edit\" id=\"comment-edit\" value=\"&nbsp;&nbsp;Edit&nbsp;&nbsp;\" onclick=\"atpComments.previewOnly(2); return false;\"/>\n        <span id=\"previewFormSpinner\" class=\"hiddenBox\"><img src=\"/.shared/images/spinner.gif\" alt=\"Working...\" /><\/span>\n\t<\/form>\n<\/div>\n<div id=\"comment-error\" class=\"hiddenBox redBox\">\t    \n   Your comment could not be posted. Error type: <span id=\"comment-error-msg\"><\/span> \n<\/div>\t\n<div id=\"comment-complete\" class=\"hiddenBox yellowGreenBox\">\n    Your comment has been posted. <a href=\"javascript:void 0;\" onclick=\"window.location.hash=\'#comment-form\';window.location.reload(false)\">Post another comment<\/a>\n<\/div>\t\n<div id=\"comment-captcha\" class=\"hiddenBox yellowBox\">\t\n    <div id=\"captchaText\">\n\t    <p id=\"captchaFailMsg\" class=\"captchaErrorText hiddenBox\">The letters and numbers you entered did not match the image. Please try again.<\/p>\t    \t        \n\t    <p>As a final step before posting your comment, enter the letters and numbers you see in the image below. This prevents automated programs from posting comments.<\/p>\n\t    <p><span id=\"comment-captcha-viewalt\">Having trouble reading this image? <a href=\"#comment-captcha\" onClick=\"atpComments.generateCaptcha();\">View an alternate.<\/a><\/span><\/p>\n    <\/div>\n    <p class=\"\"><img id=\"captchaImg\" /><\/p>\t\t\n    <form id=\"comment-captcha-form\" \n\t\t  method=\"post\"\n\t\t  onsubmit=\"atpComments.submitWithCaptcha(); return false;\">\n\t\t<input type=\"hidden\" name=\"captcha_chal\" id=\"comment-captcha-chal\" value=\"\" />\n        <p>\n\t        <input id=\"comment-captcha-text\" name=\"captcha_text\" size=\"10\" />\n        <\/p>\n        <p>\n            <input type=\"submit\" name=\"continue\" id=\"captcha-continue\" value=\"&nbsp;Continue&nbsp;\" />\n            <span id=\"captchaFormSpinner\" class=\"commentSpinner hiddenBox\"><img src=\"/.shared/images/spinner.gif\" alt=\"Working...\" /><\/span>\n        <\/p>\n    <\/form>\n<\/div>\n'; 
+var entryPermalink = "http://natishalom.typepad.com/nati_shaloms_blog/2009/04/writing-your-own-scalable-twitter.html";
+var inlineReply = document.createElement("div");
+var commentFooterLinks;
+var commentHeader;
+var commentReplyXID;
+var commentReplyAuthor;
+var commentReplyComplete;
+var inlineReplyLoaded = 0;
+var commentFormNum = undefined; /* Deprecated but still exists in advanced template sets, so must be defined */
+
+function xidToCommentPermalink (entryUrl, xid) {
+    return entryUrl + "?cid=" + xid + "#comment-" + xid;
+}
+
+
+/* Deprecated advanced template functions */
+function handleSubmit() { return true; };
+function handleChange() { return true; };
+</script>
+<script type="text/javascript" src="/.shared/js/yui/yuiloader-beta-min.js"></script>
+<script type="text/javascript" src="/.shared/js/atpcomments.js?v=5"></script>
+
+
+
+ 
+
+<!-- Blogside Toolbar -->
+<script type="text/javascript">
+    var TPToolbar = {
+        src:   "http://www.typepad.com/services/toolbar?blog_id=6a00d835457b7453ef00d835457b7553ef&asset_id=6a00d835457b7453ef01156f1ae981970c&atype=Individual&to=http%3A%2F%2Fnatishalom.typepad.com%2Fnati_shaloms_blog%2F2009%2F04%2Fwriting-your-own-scalable-twitter.html&autofollowed=0",
+        asset_xid: "6a00d835457b7453ef01156f1ae981970c",
+    
+        bookmarklet_uri: "http://static.typepad.com/.shared/js/qp/loader-combined-min.js"
+    };
+    var TYPEPAD___bookmarklet_domain = "http://www.typepad.com/";
+</script>
+<script type="text/javascript" src="/.shared/js/toolbar/blogside-toolbar-combined-min.js"></script>
+<!-- End Blogside Toolbar -->
+<!-- Begin comScore Tag -->
+<script>
+document.write(unescape("%3Cscript src='" + (document.location.protocol == "https:" ? "https://sb" : "http://b") + ".scorecardresearch.com/beacon.js'%3E%3C/script%3E"));
+</script>
+<script>
+COMSCORE.beacon({
+  c1: 2,
+  c2: "6035669",
+  c3: "",
+  c4: "http://natishalom.typepad.com/nati_shaloms_blog/2009/04/writing-your-own-scalable-twitter.html",
+  c5: "",
+  c6: "",
+  c15: ""
+});
+</script>
+<noscript>
+  <img src="http://b.scorecardresearch.com/b?c1=2&c2=6035669&c3=&c4=http%3A%2F%2Fnatishalom.typepad.com%2Fnati_shaloms_blog%2F2009%2F04%2Fwriting-your-own-scalable-twitter.html&c5=&c6=&c15=&cv=1.3&cj=1" style="display:none" width="0" height="0" alt="" />
+</noscript>
+<!-- End comScore Tag -->
+</body>
+</html>
+<!-- ph=1 -->
