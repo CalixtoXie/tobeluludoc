@@ -1,0 +1,2320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+	<title>InfoQ: Google Wave’s Architecture</title>
+    
+	
+	<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name="copyright" content="&copy; 2006 C4Media" />
+<meta name="author" content="alex[at]c4media[dot]com" />
+
+	
+	
+    <link rel="stylesheet" type="text/css" media="screen" href="http://cdn4.infoq.com/styles/style.css?20110831" />
+    <link rel="stylesheet" type="text/css" media="screen" href="http://cdn1.infoq.com/styles/header_footer.css?20110831" />
+    <link rel="stylesheet" type="text/css" media="print" href="http://cdn4.infoq.com/styles/print.css?20110829" />
+    <!--[if LTE IE 6]>
+    <link rel="stylesheet" type="text/css" media="screen" href="http://cdn4.infoq.com/styles/style-ie6.css" />
+    <![endif]-->
+    <!--[if IE 7]>
+    <link rel="stylesheet" type="text/css" media="screen" href="http://cdn3.infoq.com/styles/style-ie7.css" />
+    <![endif]-->
+    <!--[if IE 8]>
+    <link rel="stylesheet" type="text/css" media="screen" href="http://cdn1.infoq.com/styles/style-ie8.css" />
+    <![endif]-->
+    <link rel="shortcut icon" href="http://cdn3.infoq.com/favicon.ico?20110420" type="image/x-icon">
+    <link rel="apple-touch-icon" href="http://cdn1.infoq.com/apple-touch-icon.png?20110420">
+    
+    <script src="http://cdn2.infoq.com/scripts/combinedJs_en.js?20110704" type="text/javascript"></script>
+	<script src="http://cdn1.infoq.com/scripts/ui/dropdown.js" type="text/javascript"></script>
+	<script src="http://cdn2.infoq.com/scripts/ui/dropdownie6.js" type="text/javascript"></script>
+	<script src="http://cdn1.infoq.com/scripts/ui/custom-form-elements.js" type="text/javascript"></script>
+	
+	
+<script type="text/javascript">var NREUMQ=NREUMQ||[];NREUMQ.push(["mark","firstbyte",new Date().getTime()])</script>
+	
+	<meta name="keywords" content="wave,Process &amp; Practices,Collaboration,Architecture,Google Wave,"/>
+	<meta name="description" content="Google Wave is three things: a tool, a platform and a protocol. The architecture has at its heart the Operational Transformation (OT), a theoretical framework meant to support concurrency control."/>
+	<meta name="pubdate" content="2009-06-01">
+
+
+<!-- ww:if test="%{#request[@com.c4m.infoq.util.Constants@FILTER_EXTRACTED_LANG_PREFERENCE] == 'en'}" -->
+	<style type="text/css">
+   		.box .box-content-2 {
+			padding-top:10px;
+		}
+	</style>
+<!-- /ww:if -->
+	
+	
+
+</head>
+
+<body > 
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+	var bannerURL='/ads/skyscraper.action';
+	var textLinksHomepageURL='/ads/homepageads.action';
+	var textLinksLeftBarURL='/ads/textlinks.action';
+	var rightbarURL='/rightbar.action';
+	var comunityWidgetUrl='/widgets/communityWidget.action';
+</script>
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+var loginLanguage='en';
+var loginURL='/login.action';
+var registerURL='/reginit.action';
+var reactivateURL='/reactivate.action';
+var reserpasswordURL='/resetpassword.action';
+var loggedIn=false;
+var logoutURL='/logout.action';
+var editUserURL='/edituser.action';
+var aboutURL='/about';
+var homeURL='/';
+</script>
+<div id="tooltip" style="display:none;"></div>
+<div id="loginWindow" style="display:none;">
+	
+
+
+
+
+
+
+
+
+
+<div id="innerLoginWindow" class="LoginWindowBox">
+	        <div class="login-popup-top-box"></div>
+	        <a href="javascript:void(0);" class="close-popup" onclick="javascript:hideLoginWindow(false);">Close</a>
+	        <h2 class="existing-user">Existing Users:</h2>
+	        <div id="loginAreaFields">
+	        <form name="popup-login" onsubmit="doLogin('loginMessage', 'forgotMessage', 'username', 'password', false);return false;">
+	          <label>Email</label>
+	          <div class="clearer" style="height: 0px;"></div>
+	          <input type="text" name="username" id="username" value="" />
+	          <div class="clearer" style="height: 0px;"></div>
+	          <label>Password</label>
+	          <div class="clearer" style="height: 0px;"></div>
+	          <input type="password" name="password" id="password" value="" />
+	          <div class="clearer" style="height: 0px;"></div>
+	          <input type="submit" value="" name="submit-login" class="submit-login" />
+	          <div class="clearer" style="height: 0px;"></div>
+	        </form>
+	        </div>
+	        
+	        <div class="login-type">
+				<div id="loginUpperArea" style="display:none;"></div>
+				<div style="display: none; text-align: left; padding-top:2px; padding-bottom:2px;" id="loginMessage"></div>
+				<div style="display: none; text-align: left; padding-top:2px; padding-bottom:2px;" id="forgotMessage">					
+					<p><a style="text-decoration:none;" href="javascript:void(0);" onClick="javascript:showResetPasswordWindow();Tracker.doTrackForgotPasswordSteps('Forgot password click');">Forgot password?</a></p>
+				</div>
+				<hr/>
+				<h2>New Users:</h2>
+	            <a style="text-decoration:none; font-weight:bold;" href="/reginit.action">Register now</a>
+	        </div>
+	        <div class="login-popup-end-box"></div>
+</div>
+<script type="text/javascript">
+	$(document).ready(function() {
+		// Login dropdown
+		$('.top-right a.login').click(function() {
+			var popup = $('#popupLogin'),
+				link = $('.top-right a.login'),
+				position = link.parent().position();
+
+			link.toggleClass('login-active');
+			popup.css('left', position.left);
+			popup.toggle();
+			
+		});		
+
+		var popupOut = $('.popupOut'),
+			popup = $('#popupLogout');
+		if (popupOut.length > 0) {
+			var w = popupOut.width();
+			var wL = $('#welcomeLabel').width();
+			popup.css({
+					width: (w + wL + 78) + 'px',
+					left: '-' + (w + wL + 98) + 'px'
+			})
+			popupOut.click(function() {
+					popup.toggle();
+			});
+		}
+	});	
+</script>
+
+
+</div>
+<div id="tagPopup" style="display:none;"></div>
+<div id="container">
+	<h1 class="logo"><a href="#">InfoQ</a></h1>
+
+	
+
+
+
+
+
+
+
+	<!-- Start header  -->
+  
+	<!-- Start logo and search box -->
+	<h1 class="logo"><a href="#">InfoQ</a></h1>
+	<div class="logo-and-search">
+    <div class="logo-box">
+      
+
+
+
+
+
+
+
+<a class="logo-img" href="/"><img src="http://cdn1.infoq.com/styles/i/logo-infoq.gif" alt="InfoQ" /></a>
+
+
+      
+	  
+
+
+
+
+
+
+
+
+<p style="margin:0;padding-top:3px;">
+	En | <a href="/cn/">中文</a> | <a href="/jp/">日本語</a> | <a href="/br/">Br</a>
+</p>
+<span class="users-count">
+	
+	    
+	    
+	566,240 Aug unique visitors
+</span>
+
+    </div>	
+	</div>
+  <!-- End logo and search box  -->
+  
+  <div id="header">
+	<p class="skip"><a href="#content">Skip to Content</a></p>
+  
+    <div id="quote"><p><nobr>Tracking change and innovation in the enterprise software development community</nobr></p></div>
+    
+    
+	
+	<div id="mainLoginArea">	    
+	    <div class="top-right">
+	      <ul>
+	        <li>
+
+
+
+
+
+
+
+<script type="text/javascript">
+	function doSearch(countryCode){		
+		var searchString = document.getElementById("searchId").value;
+		document.getElementById("searchTerm").value =  searchString;		
+		document.getElementById("cse-search-box").submit();
+	}
+	
+	function clearSearchText(){	
+		var searchtext =  document.getElementById("searchId").value
+		if(searchtext==JSResource.search){
+			document.getElementById("searchId").value="";
+		}
+	}
+</script>
+
+	
+
+
+    <div class="search-box">
+      
+			
+<form id="cse-search-box" onsubmit="customOnsubmit(); return true;" action="/search.action" method="GET">
+
+	<input type="hidden" name="queryString" size="20" id="searchTerm"/>
+
+	
+	<div class="input-search-bg">
+			
+		
+			<input type="text" name="search" id="searchId" onclick="clearSearchText();" onkeypress="if ((event.which && event.which == 13)||(event.keyCode && event.keyCode == 13)){doSearch('');}" />
+		
+	</div>
+    <input type="submit" value="" name="go" class="search-go" onclick="doSearch('');return false;">
+
+</form>
+
+
+<script>
+	function customOnsubmit() {
+		
+	}
+</script>
+
+
+
+    </div>
+</li>
+            	       
+	        <li><a href="javascript:void(0)" class="login" title="Login"><b></b><span></span>Login</a></li>
+	        <li><a href="/reginit.action" class="register" title="Register"><span></span>Register</a></li>
+            
+                <li><a id="persfeed" href="#" class="feed" title="Personal Feed"></a></li>
+            
+	        
+            <li>
+				
+
+
+
+
+
+
+<a style="padding-top: 0px;" href="http://qconsf.com?utm_source=infoq&utm_medium=banner&utm_campaign=buttonimage" target="_blank">
+	<img src="http://cdn4.infoq.com/styles/i/qcon/sf_2011/qcon_banner_small_140x60_tracks3.jpg" class="qcon"/>
+</a>
+
+	        </li>
+	      </ul>
+	      <div id="popupLogin" class="LoginWindowHeaderBox">
+	        <div class="bg-top-right"></div>
+	        <a href="javascript:void(0);" class="close-popup-top" onclick="javascript:hideLoginWindow(true);">Close</a>
+	        <h2 class="existing-user">Existing Users:</h2>
+	        <form name="tpopup-login" onsubmit="doLogin('tloginMessage', 'tforgotMessage', 'tusername', 'tpassword', true);return false;">
+	          <label>Email</label>
+	          <div class="clearer" style="height: 0px;"></div>
+	          <input type="text" name="tusername" id="tusername" value="" />
+	          <div class="clearer" style="height: 0px;"></div>
+	          <label>Password</label>
+	          <div class="clearer" style="height: 0px;"></div>
+	          <input type="password" name="tpassword" id="tpassword" value="" />
+	          <div class="clearer" style="height: 0px;"></div>
+	          <input type="submit" value="" name="submit-login" class="submit-login" />
+	          <div class="clearer" style="height: 0px;"></div>
+	        </form>
+	        
+	        <div class="login-type">
+				<div id="tloginUpperArea" style="display:none;"></div>
+				<div style="display: none; text-align: left; padding-top:2px; padding-bottom:2px;" id="tloginMessage"></div>
+				<div style="display: block; text-align: left; padding-top:2px; padding-bottom:2px;" id="tforgotMessage">					
+					<p><a style="text-decoration:none;" href="javascript:void(0);" onClick="javascript:showResetPasswordWindow(true);Tracker.doTrackForgotPasswordSteps('Forgot password click');">Forgot password?</a></p>
+				</div>
+				<hr/>
+				<h2>New Users:</h2>
+	            <a style="text-decoration:none; font-weight:bold;" href="/reginit.action">Register now</a>
+	        </div>
+	        <div class="login-popup-end-box"></div>
+	      </div>
+	    </div>	    
+	</div>
+	
+        
+    <div class="clearer" style="height: 0px;"></div>
+    
+    
+
+
+
+
+
+
+
+
+<div class="navigation tworownavigation">
+    <p>&nbsp;</p>	
+	<ul>
+		<li id="pseudopersona" class="active">
+        <div class="div-submenu">
+          <div class="submenu-content">
+          <div class="submenu-start"></div>
+            <ul>
+              <li><a class="f_headertopic" href="/mobile/" title="Mobile">Mobile</a></li>
+              <li><a class="f_headertopic" href="/HTML5Topic/" title="HTML5">HTML5</a></li>
+              <li><a class="f_headertopic" href="/javascript/" title="JavaScript">JavaScript</a></li>
+              <li><a class="f_headertopic" href="/cloud-computing/" title="Cloud">Cloud</a></li>
+              <li><a class="f_headertopic" href="/Devops/" title="DevOps">DevOps</a></li>
+              
+              <li><a class="f_headertopic" href="/agile/" title="Agile">Agile</a></li>
+              
+              <li><a class="f_headertopic" href="/soa/" title="SOA">SOA</a></li>
+              <li><a class="f_headertopic" href="/agile_techniques/" title="Agile Techniques">Agile Techniques</a></li>
+            </ul>
+            
+            <div class="submenu-end"></div>
+            
+            <ul class="partner-zones">
+            	<li>
+            		<a class="f_headertopic" href="http://www.infoq.com/news/2011/08/minor-ui-launch" style="color:#4E81BB;font-family:Helvetica,Arial;float:none;font-weight:bold;text-decoration:underline;">New UI!</a>                	
+                </li>
+              
+            </ul>            
+            
+          </div>
+        </div>
+		</li>
+	
+	
+		<li>
+	
+        <a href="/development/" title="Development">Development</a>
+        <div class="div-submenu">
+          <div class="submenu-content">
+          <div class="submenu-start"></div>
+            <ul>
+              <li><a class="f_headertopic" href="/java/" title="Java">Java</a></li>
+              <li><a class="f_headertopic" href="/dotnet/" title=".Net">.Net</a></li>
+              <li><a class="f_headertopic" href="/cloud-computing/" title="Cloud">Cloud</a></li>
+              <li><a class="f_headertopic" href="/mobile/" title="Mobile">Mobile</a></li>
+              <li><a class="f_headertopic" href="/HTML5Topic/" title="HTML5">HTML5</a></li>
+              <li><a class="f_headertopic" href="/javascript/" title="JavaScript">JavaScript</a></li>
+              <li><a class="f_headertopic" href="/ruby/" title="Ruby">Ruby</a></li>
+              <li><a class="f_headertopic" href="/dsl/" title="DSLs">DSLs</a></li>
+              <li><a class="f_headertopic" href="/python/" title="Python">Python</a></li>
+              <li><a class="f_headertopic" href="/Topic_PHP/" title="PHP">PHP</a></li>
+              <li><a class="f_headertopic" href="/PaaS/" title="PaaS">PaaS</a></li>
+            </ul>
+            <div class="submenu-end"></div>
+            
+          </div>
+        </div>
+      </li>
+	
+	
+		<li>
+	
+      	<a href="/architecture-design/" title="Architecture & Design" class="tworowpersona">Architecture <br/><span>& Design</span></a>
+        <div class="div-submenu">
+          <div class="submenu-content">
+          <div class="submenu-start"></div>
+          <ul>
+              <li><a class="f_headertopic" href="/Modeling/" title="Modeling">Modeling</a></li>
+              <li><a class="f_headertopic" href="/performance-scalability/" title="Scalability/Performance">Scalability/Performance</a></li>
+              <li><a class="f_headertopic" href="/domain-driven-design/" title="DDD">DDD</a></li>
+              <li><a class="f_headertopic" href="/Behavior-Driven-Development/" title="BDD">BDD</a></li>
+              <li><a class="f_headertopic" href="/AOP/" title="AOP">AOP</a></li>
+              <li><a class="f_headertopic" href="/DesignPattern/" title="Patterns">Patterns</a></li>
+              <li><a class="f_headertopic" href="/Security/" title="Security">Security</a></li>
+              <li><a class="f_headertopic" href="/cloud-computing/" title="Cloud">Cloud</a></li>
+              <li><a class="f_headertopic" href="/soa/" title="SOA">SOA</a></li>
+          </ul>
+          <div class="submenu-end"></div>
+          
+          </div>
+        </div>
+      </li>
+	
+	
+		<li>
+	
+      	<a href="/process-practices/" title="Process & Practices" class="tworowpersona">Process &amp;<br/><span>Practices</span></a>
+        <div class="div-submenu">
+          <div class="submenu-content">
+          <div class="submenu-start"></div>
+          <ul>
+              <li><a class="f_headertopic" href="/agile/" title="Agile">Agile</a></li>
+              <li><a class="f_headertopic" href="/Leadership/" title="Leadership">Leadership</a></li>
+              <li><a class="f_headertopic" href="/team-collaboration/" title="Collaboration">Collaboration</a></li>
+              <li><a class="f_headertopic" href="/agile_techniques/" title="Agile Techniques">Agile Techniques</a></li>
+              <li><a class="f_headertopic" href="/methodologies/" title="Methodologies">Methodologies</a></li>
+              <li><a class="f_headertopic" href="/continuous_integration/" title="Continuous Integration">Continuous Integration</a></li>
+              <li><a class="f_headertopic" href="/lean/" title="Lean/Kanban">Lean/Kanban</a></li>
+              <li><a class="f_headertopic" href="/cust_requirements/" title="Cust. Requirements">Cust. Requirements</a></li>
+          </ul>
+          <div class="submenu-end"></div>
+          
+          </div>
+        </div>
+      </li>
+	
+	
+		<li>
+	
+      	<a href="/operations-infrastructure/" title="Operations & Infrastructure" class="tworowpersona">Operations &amp;<br/><span>Infrastructure</span></a>
+        <div class="div-submenu">
+          <div class="submenu-content">
+          <div class="submenu-start"></div>
+          <ul>
+              <li><a class="f_headertopic" href="/performance-scalability/" title="Scalability/Performance">Scalability/Performance</a></li>
+              <li><a class="f_headertopic" href="/bigdata/" title="Big Data">Big Data</a></li>
+              <li><a class="f_headertopic" href="/devops/" title="DevOps">DevOps</a></li>
+              <li><a class="f_headertopic" href="/cloud-computing/" title="Cloud">Cloud</a></li>
+              <li><a class="f_headertopic" href="/virtualization/" title="Virtualization">Virtualization</a></li>
+              <li><a class="f_headertopic" href="/NoSQL/" title="NoSQL">NoSQL</a></li>
+              <li><a class="f_headertopic" href="/ApplicationServers/" title="App Servers">App Servers</a></li>
+          </ul>
+          <div class="submenu-end"></div>
+          
+          </div>
+        </div>
+      </li>
+	
+	
+		<li>
+	
+      	<a href="/enterprise-architect/" title="Enterprise Architecture" class="tworowpersona">Enterprise <br/><span>Architecture</span></a>
+        <div class="div-submenu">
+          <div class="submenu-content">
+          <div class="submenu-start"></div>
+          <ul>
+              <li><a class="f_headertopic" href="/enterprise-architecture/" title="Enterprise Architecture">Enterprise Architecture</a></li>
+              <li><a class="f_headertopic" href="/bpm/" title="BPM">BPM</a></li>
+              <li><a class="f_headertopic" href="/business_it_alignment/" title="Business/IT Alignment">Business/IT Alignment</a></li>
+              <li><a class="f_headertopic" href="/EAI/" title="Integration (EAI)">Integration (EAI)</a></li>
+              <li><a class="f_headertopic" href="/Architecture-Documentation/" title="Architecture Documentation">Architecture Documentation</a></li>
+              <li><a class="f_headertopic" href="/Governance/" title="IT Governance">IT Governance</a></li>
+              <li><a class="f_headertopic" href="/web20/" title="Web 2.0">Web 2.0</a></li>
+              <li><a class="f_headertopic" href="/soa/" title="SOA">SOA</a></li>
+          </ul>
+          <div class="submenu-end"></div>
+          
+          </div>
+        </div>
+      </li>	
+    </ul>
+  </div>
+  <div class="clearer" style="height: 0px;"></div>
+</div>
+
+
+	<script src="http://cdn1.infoq.com/scripts/ui/jquery.hoverIntent.js" type="text/javascript"></script>
+<script type="text/javascript">
+		//after page is loaded the RSS link is constructed
+		$(function(){
+			 buildRSSUrl();			 
+		});	
+		
+		function buildRSSUrl() {
+			var token = 'KCGFPyYaBwAQrdzT1jszjexp1lnsPb7C';
+			token=encodeURIComponent(token); 
+			var countryCode= ''; 
+			var first = '/rss';
+			var second = '/rss.action?token='
+			//change the value of the link
+			$('#persfeed').attr('href', countryCode + first + second + token);
+		}
+				
+		//enable hoverIntent plugin for personas links
+		jQuery(".navigation li a").not('.f_headertopic').hoverIntent({
+			 sensitivity: 1,
+			 interval: 50,
+			 over: showTopics,
+			 out: function(){}
+		});
+				
+		function showTopics() {		    	    			
+			$('.navigation li').removeClass("active");
+			$(this).parent().addClass("active");			
+		}		
+		
+		function showDefaultTopics() {
+		    $('.navigation li').removeClass("active");
+		    $('#pseudopersona').addClass("active");
+		}	
+</script>
+    
+<!-- End header -->
+
+
+	<div id="columns_container">
+	
+	<div id="content">
+	<div id="content-wrapper">
+		
+		<div class="box">
+			
+			
+
+    <div class="contribute contribute-print contribute-print-news">
+    <ul>
+    	<li class="c-print"><a href="javascript:print()">Print</a></li>
+    	<li class="c-news"><a href="mailto:news@infoq.com?Subject=[NEWS]&Body=Thanks for your interest in submitting news to InfoQ.com. Please provide as much detail about your news suggestion in this email as possible.   Your suggestion will be forwarded to a queue our editors review for news ideas - if selected - an InfoQ editor will write an original story using material you provided.  Feel free to delete this paragraph and replace it with your news story.  - InfoQ Editorial team.">Contribute News</a></li>
+    	
+    	
+    		<li class="c-my-bookmark"><a href="" id="widget-01-open-butt"></a></li>
+    		
+    	    			        	
+    </ul>		        
+    </div>			
+    <h2>News</h2>
+    <div class="top-corners" id="widget-01-close"><div></div></div>
+    
+<!-- ww:if test="%{#request[@com.c4m.infoq.util.Constants@FILTER_EXTRACTED_LANG_PREFERENCE] == 'en'}" -->
+	<div id="widget-01-open">
+	      <em class="left"></em>
+	      <em class="badge"></em>
+	      <div class="left">My Bookmarks</div>
+	      <div class="right">
+	      	<ul>
+	          <li id="bookoneli"><div id="nobooks" style="display: none;"></div><a id="bookone" href="" style="display: none; color: #1C497B;"></a></li>
+	          <li id="booktwoli"><a id="booktwo" href="" style="display: none; color: #1C497B;"></a></li>
+	          <li id="bookthreeli"><a id="bookthree" href="" style="display: none; color: #1C497B;"></a></li>
+	        </ul>
+	      </div>
+	      <div class="clearer"></div>
+	      <em class="right"></em>      
+	      
+	      
+	        <p><a onclick="javascript:showLoginWindow(this,ALIGN_LEFT,new Function('void(0);'));" href="javascript:void(0)">Login</a> or <a href="/reginit.action">Register</a> to enable bookmarks for unlimited time.</p> 
+	      
+	      <em class="right-bottom" id="widget-01-close-butt"></em>
+	</div>
+	<div id="bookmark-message"><p>The content has been bookmarked!</p></div>
+	<div id="bookmark-message-error"><p>There was an error bookmarking this content! Please retry.</p></div>
+<!-- /ww:if -->
+    
+    <div class="box-content">
+    <div class="box-content-2">
+    <div class="box-content-5">
+
+	
+		
+		
+    <h1><a href="/news/2009/06/wave" rel="permalink">Google Wave’s Architecture</a></h1>
+    
+    <p class="info">
+    	Posted by
+		
+			
+		
+        <strong><a
+	
+	href="/author/Abel-Avram"
+
+ class="editorlink f_taxonomyEditor">
+Abel Avram</a>
+</strong>
+        
+        on
+        Jun 01, 2009
+    </p>
+    
+    <dl class="tags2">
+    	<dt class="community">Sections</dt>
+        
+        	<dd>	<a class="f_taxonomy" href="/process-practices" name="process-practices" id="6,817" onclick="try {CategoryPopup.showPopup(this);} catch(e) {}; return false;">Process & Practices</a></dd>
+        
+       
+       	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dt class="topics">Topics</dt>
+
+   	<dd>
+   		
+   			
+			
+   		
+		<a class="f_taxonomy" href="/collaboration" name="collaboration" id="128" onclick="try {CategoryPopup.showPopup(this);} catch(e) {}; return false;">Collaboration</a>
+   		,
+   	</dd>
+
+   	<dd>
+   		
+   			
+			
+   		
+		<a class="f_taxonomy" href="/architecture" name="architecture" id="1,389" onclick="try {CategoryPopup.showPopup(this);} catch(e) {}; return false;">Architecture</a>
+   		
+   	</dd>
+
+
+	<dt class="topics">Tags</dt>
+	
+		<dd>
+			
+				
+				
+			
+		<a class="f_taxonomy" href="/google-wave" name="google-wave" id="5,526" onclick="try {CategoryPopup.showPopup(this);} catch(e) {}; return false;">Google Wave</a>
+			
+		</dd>
+	
+
+       	
+        
+    </dl>
+   
+   	
+
+
+
+
+
+
+
+<!-- AddThis Button BEGIN -->
+<div class="addthis_toolbox addthis_default_style" style="width:100%;height:19px;">
+	<div style="float: left;">
+		<a href="http://www.addthis.com/bookmark.php?v=250&amp;username=infoq" class="addthis_button" 
+			style="text-decoration:none;color:#1C497B; padding:0 2px; float:left; font-weight: bold;font-size: 85%;">
+			Share				
+			<img src="http://s7.addthis.com/static/btn/sm-plus.gif"  width="16" height="15" border="0" alt="Share" />
+		</a>
+		<span class="addthis_separator">|</span>
+		<a class="addthis_button_facebook"></a>
+		<a class="addthis_button_digg"></a>
+		<a class="addthis_button_dzone"></a>		
+		<a class="addthis_button_twitter"></a>
+		<a class="addthis_button_reddit"></a>
+		<a class="addthis_button_delicious"></a>
+		<a class="addthis_button_email"></a>		
+	</div>
+	
+		<script type="text/javascript">
+			var label = 'en';  
+   	        var action = 'news';
+   	        
+   	        function trackThisBookmark(){
+   	        	Tracker.doTrackContentBookmark(action, label);   	        	
+   	        }		    
+		</script>
+		<div style="float: right;">
+		   	<a id="bookmark-this" title="" href="javascript:bookmarkContent();" class="bookmark-this" onClick="trackThisBookmark();"><img src="/styles/i/bookmarkthis.png" /></a>
+		</div>	
+		<div class="clearer"></div>		
+	
+</div>
+
+<!-- AddThis Button END -->
+
+
+      	    
+   	<p>Google Wave is three things: <a href="http://wave.google.com/" target="_blank">a tool</a>, a <a href="http://code.google.com/apis/wave/" target="_blank">platform</a> and a <a href="http://www.waveprotocol.org/draft-protocol-spec" target="_blank">protocol</a>. The architecture has at its heart the <a href="http://en.wikipedia.org/wiki/Operational_transformation" target="_blank">Operational Transformation</a> (OT), a theoretical framework meant  to support concurrency control.</p>
+<p>First of all, a definition is needed. <a href="http://www.waveprotocol.org/whitepapers/google-wave-architecture" target="_blank">Google Wave</a> is:</p>
+<blockquote>
+<p>a new communication and collaboration platform based on hosted XML documents  (called waves) supporting concurrent modifications and low-latency  updates.</p>
+</blockquote>
+<h3>The Tool</h3>
+<p>Google Wave is an email program + instant messenger + collaborative document  sharing &amp; editing tool. It is using JavaScript and HTML5 on the client side  running in browsers like Chrome, Firefox, Safari, including mobile platforms  (iPhone, Android), and Java + Python on the server side, but the server side can  be implemented with anything a customer wants. The tool was built with <a href="http://code.google.com/webtoolkit/" target="_blank">GWT</a> and uses <a href="http://gears.google.com/" target="_blank">Google Gears</a> to handle drag  and drop which is not yet included in HTML 5. The tool needs a dedicated server  to handle concurrent communications which is needed especially for large teams.  The server can be outside in the cloud or inside in a private enterprise or,  simply, in someone&rsquo;s home.</p>
+<p>Google Wave was <a href="http://www.youtube.com/watch?v=v_UyVmITiYQ" target="_blank">demoed</a> during Google I/O last week.</p>
+<h3>The Platform</h3>
+<p>Google Wave comes with a public <a href="http://code.google.com/apis/wave/guide.html" target="_blank">API</a> and the  company promises to open source the entire platform before the product goes  live. As a platform, Wave allows developers to modify the base code and extend  it with <a href="http://code.google.com/apis/wave/extensions/gadgets/guide.html" target="_blank">gadgets</a> and <a href="http://code.google.com/apis/wave/extensions/robots/guide.html" target="_blank">robots</a>. Gadgets are small programs running inside of a wave,  while robots are &ldquo;automated wave participants.&rdquo; Wave can also be embedded in  other mediums like blogs.</p>
+<h3>The Protocol</h3>
+<h4>Data Model</h4>
+<p>The main elements of Google Wave&rsquo;s <a href="http://www.waveprotocol.org/whitepapers/internal-client-server-protocol" target="_blank">data model</a> are:</p>
+<blockquote>
+<p><strong>Wave</strong> - Each wave has a globally unique wave ID and consists  of a set of wavelets.</p>
+<p><strong>Wavelet </strong>- A wavelet has an ID that is unique within its  containing wave and is composed of a participant list and a set of documents.  The wavelet is the entity to which Concurrency Control / Operational  Transformations apply.</p>
+<p><strong>Participant</strong> - A participant is identified by a wave address,  which is a text string in the same format as an email address  (local-part@domain). A participant may be a user, a group or a robot. Each  participant may occur at most once in the participant list.</p>
+<p><strong>Document</strong> - A document has an ID that is unique within its  containing wavelet and is composed of an XML document and a set of &quot;stand-off&quot;  annotations. Stand-off annotations are pointers into the XML document and are  independent of the XML document structure. They are used to represent text  formatting, spelling suggestions and hyper-links. Documents form a tree within  the wavelet.</p>
+<p><strong>Wave View</strong> - A wave view is the subset of wavelets in a wave  that a particular user has access to. A user gains access to a wavelet either by  being a participant on the wavelet or by being a member of a group that is a  participant (groups may be nested).</p>
+</blockquote>
+<h4>Operational Transformation</h4>
+<p>This is the <a href="http://www.waveprotocol.org/whitepapers/operational-transform" target="_blank">crucial part</a> of Wave&rsquo;s technology. Google Wave makes extensive  use of <a href="http://en.wikipedia.org/wiki/Operational_transformation" target="_blank">Operational Transformations</a> (OT) which are executed on the  server. When an user edits a collaborative document opened by several users, the  client program provides an Optimistic UI by immediately displaying what he/she  types but it also sends the editing operation to the server to be ratified  hoping that it will be accepted by the server. The client waits for the server  to evaluate the operation and will cache any other operations until the server  replies. After the server replies, all cached operations are sent from client to  server in bulk. The server, considering operations received from other clients,  will transform the operation accordingly and will inform all clients about the  transformation, and the clients will update their UI accordingly. Operations are  sent to the server and propagated to each client on a character by character  basis, unless it is a bulk operation. The server is the keeper of the document  and its version is considered the &ldquo;correct&rdquo; version. In the end, each client  will be updated with the final version received from the server, which is the  result of possibly many operational transformations. There are recovery means  provided for communication failure or server/client crash. All XML documents  exchanged between the client and the server carry a checksum for rapid  identification of miscommunications.</p>
+<h4>Client-Server Protocol</h4>
+<p><strong>Operations.</strong> Wavelets, the basic component of a wave, go  through a series of changes called operational transformations. These changes  need to be propagated and applied to each client otherwise a client gets out of  sync.</p>
+<p><strong>Operation Sequencing.</strong> All operations applied to wavelets are  sent in strict order. An operation is not sent until the server has responded to  the previous one. The server orders the operations based on a version number.  Each client needs to apply the operations respecting the proper order.</p>
+<p><strong>Opening a wavelet.</strong> To start communicating on a wavelet, a  client sends an Open Request containing the Wave ID and the Wavelet ID to the  server. The server responds with a snapshot - the serialized state of the  wavelet - or a history hash of the corresponding version.</p>
+<p><strong>Server-client Communication.</strong> The server sends to the client  one of the following: a delta (a sequence of one or more operations), a version  number or a history hash.</p>
+<p><strong>Client-server Communication.</strong> The client sends: a delta or a  version number.</p>
+<p><strong>Recovery.</strong> When the communication fails, the clients starts  by reopening the servlet by sending a history of hashes previously received from  the server.</p>
+<h4>Federation</h4>
+<p>The <a href="http://www.waveprotocol.org/whitepapers/google-wave-architecture" target="_blank">Google Wave Federation Protocol</a> allows multiple entities (wave  providers) to share waves with each other. A wave provider can be a server  running in someone&rsquo;s home providing waves for a single user or all family  members, or a corporation, or an ISP, Google being just another wave  provider.</p>
+<p>Useful links: <a href="http://wave.google.com/" target="_blank">Google  Wave</a>, <strong><a href="http://code.google.com/apis/wave/">Google Wave  API</a></strong>, <a href="http://www.waveprotocol.org/" target="_blank">Wave  Protocol</a>.</p>
+   	
+   	
+    
+    <script type="text/javascript">		        
+        //pass the title of this content to the bookmark JS function
+        function bookmarkContent(){
+            var contentTitle = "Google Wave’s Architecture";
+        	bookmark(contentTitle);
+        }          
+	</script>
+	
+    
+
+
+
+
+
+
+
+
+    
+	
+
+
+
+
+
+
+
+
+<div class="vendor-content-box">
+	
+		<div style="float:left;width:69%;">
+	
+	<h3>Related<span class="vendor">Vendor</span>Content</h3>
+
+	
+	
+		
+		
+			<p class="entrypdf">
+				<a href="/infoq/url.action?i=1782&t=f" target="_blank">
+					The Agile Tester
+				</a>
+			</p>
+		
+	
+	
+	
+	
+		
+			
+		
+		<p class="entrypdf f_vcrbottom" jsh="{&quot;title&quot;:&quot;Agile Practices to Improve Project Management Organization (PMO) Effectiveness&quot;,&quot;id&quot;:1534}">
+			<a href="/vendorcontent/show.action?vcr=1534" >
+				Agile Practices to Improve Project Management Organization (PMO) Effectiveness
+			</a>
+		</p>
+	
+		
+			
+		
+		<p class="entrypdf f_vcrbottom" jsh="{&quot;title&quot;:&quot;Agile Release management: Towards Frequent, Low Risk Production Releases&quot;,&quot;id&quot;:1574}">
+			<a href="/vendorcontent/show.action?vcr=1574" >
+				Agile Release management: Towards Frequent, Low Risk Production Releases
+			</a>
+		</p>
+	
+		
+			
+		
+		<p class="entrydownload f_vcrbottom" jsh="{&quot;title&quot;:&quot;Execute projects, approve requirements, run tests, track changes and collaborate with Contour&quot;,&quot;id&quot;:1597}">
+			<a href="/vendorcontent/show.action?vcr=1597" target="_blank">
+				Execute projects, approve requirements, run tests, track changes and collaborate with Contour
+			</a>
+		</p>
+	
+		
+			
+		
+		<p class="entrypdf f_vcrbottom" jsh="{&quot;title&quot;:&quot;Agile Development: A Manager's Roadmap for Success&quot;,&quot;id&quot;:1504}">
+			<a href="/vendorcontent/show.action?vcr=1504" >
+				Agile Development: A Manager's Roadmap for Success
+			</a>
+		</p>
+	
+	
+	
+	
+	
+	
+	
+		</div>
+		<div style="float:right;width:25%;">
+			<h3>Related Sponsor</h3>
+			
+				<a href="/infoq/url.action?i=1785&t=f" target="_blank">
+					<img src="/resource/sponsorship/featuredcategory/6817/6th-State-of-Agile-Development-Survey-Graphic_VCR.jpg" border="0" style="margin: 0 0 5px 5px; float:right;"/>
+				</a>
+			
+			
+			
+			<div class="entrysponsors">
+				<p><a href="/infoq/url.action?i=1783&t=f" target="_blank">Take the 6th Annual State of Agile Survey</a>. Get access to the survey results first &amp; be entered to win an <a href="/infoq/url.action?i=1784&t=f" target="_blank">Apple iPad 2</a></p>
+			</div>
+			<div style="clear:both;"></div>
+		</div>
+		<div style="clear:both;"></div>
+	
+	
+</div>
+
+
+	
+	
+	
+		
+	
+
+
+
+
+
+
+<script type='text/javascript'>
+var replyEnabled=true;
+var forumID=1;
+var threadID=11824;
+var previewText='Preview';
+var pleaseWait='Please Wait ...';	
+var reply='Reply';
+var postMessage='Post Message';	
+var errorSubject='Please enter a subject.';	
+var errorBody='You can not post a blank message. Please type your message and try again.';
+var cancel='Cancel';
+var goBackOrEdit='Go Back/Edit';
+var re='Re:';
+var lastMessage=0;
+var stopWatchText='Stop Watching Thread';
+var startWatchText='Watch Thread';
+var descending='false';
+var ctxPath= '';
+var postAddress= ctxPath + '/forum/post!post.action?language=' + 'en';
+var postAddWatches= ctxPath + '/forum/watches!add.action';
+var postRemoveWatches= ctxPath + '/forum/watches!remove.action';
+var loggedIn=false;	
+
+
+var forumNotificationDefault=false;
+
+</script>
+
+<script src="/scripts/forum.js?20110705" type='text/javascript'></script>
+<script type="text/javascript" src='/dwr/interface/ForumNotifications.js'></script>
+<script type="text/javascript" src='/scripts/jquery.timeago.js'></script>
+<script type="text/javascript" src='/scripts/date.js'></script>
+
+	<div class="comments-header">
+	    <h3><span id="comments-number">4</span> comments</h3>
+	    <p>
+			
+				
+				
+	                <span id="watch">
+	                    <a href="javascript:void(0)" class="comment-watch" onClick="javascript:loggedIn?startWatch():showLoginWindow(this,ALIGN_RIGHT,new Function('startWatch();'));">
+	                        Watch Thread
+	                    </a>
+	                </span>	
+				
+				
+			<a href="javascript:void(0)" class="comment-reply" onClick="javascript:loggedIn?replyFromTooltip(43304,true):showLoginWindow(this,ALIGN_RIGHT,new Function('replyFromTooltip(43304,true)'));">Reply</a>
+		</p>
+	</div>
+	
+	<span id="newMessage" style="display:none;"></span>
+	
+	<span id="replyTree_43304"></span>	  	
+	<span id="replyMessage_43304"></span>
+		
+		<div class="forum-list-tree" style="position: relative; left: 0px; margin-right: 0px;">		
+			<a class="forum-list">
+			<span id="tooltip_43349" style="cursor:pointer; cursor:hand;">server-side</span>		
+			</a>
+			by 
+			Balaji D Loganathan 
+			Posted
+			<span id="treeRelativeTime_0"></span>		
+			<script type="text/javascript" language="javascript">				
+				$("#treeRelativeTime_0").html(getRelativeTime(1243918752696));
+			</script>
+			<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	        <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	        
+			<script type="text/javascript" language="javascript">				
+		    	$('#tooltip_43349').mouseover(function(e) {
+		    		initializeTooltip(e);
+		    	});
+		    	$('#tooltip_43349').mouseout(function(e) {
+		    		deintializeTooltip(e);
+		    	});
+		  	</script>  	
+	  	</div>
+		<span id="replyTree_43349"></span>
+		<span id="replyMessage_43349"></span>
+		
+		<div class="forum-list-tree" style="position: relative; left: 15px; margin-right: 15px;">		
+			<a class="forum-list">
+			<span id="tooltip_43369" style="cursor:pointer; cursor:hand;">Re: server-side</span>		
+			</a>
+			by 
+			Abel Avram 
+			Posted
+			<span id="treeRelativeTime_1"></span>		
+			<script type="text/javascript" language="javascript">				
+				$("#treeRelativeTime_1").html(getRelativeTime(1243923624166));
+			</script>
+			<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	        <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	        
+			<script type="text/javascript" language="javascript">				
+		    	$('#tooltip_43369').mouseover(function(e) {
+		    		initializeTooltip(e);
+		    	});
+		    	$('#tooltip_43369').mouseout(function(e) {
+		    		deintializeTooltip(e);
+		    	});
+		  	</script>  	
+	  	</div>
+		<span id="replyTree_43369"></span>
+		<span id="replyMessage_43369"></span>
+		
+		<div class="forum-list-tree" style="position: relative; left: 0px; margin-right: 0px;">		
+			<a class="forum-list">
+			<span id="tooltip_43452" style="cursor:pointer; cursor:hand;">Google IO notes</span>		
+			</a>
+			by 
+			Richard L. Burton III 
+			Posted
+			<span id="treeRelativeTime_2"></span>		
+			<script type="text/javascript" language="javascript">				
+				$("#treeRelativeTime_2").html(getRelativeTime(1243970101276));
+			</script>
+			<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	        <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	        
+			<script type="text/javascript" language="javascript">				
+		    	$('#tooltip_43452').mouseover(function(e) {
+		    		initializeTooltip(e);
+		    	});
+		    	$('#tooltip_43452').mouseout(function(e) {
+		    		deintializeTooltip(e);
+		    	});
+		  	</script>  	
+	  	</div>
+		<span id="replyTree_43452"></span>
+		<span id="replyMessage_43452"></span>
+		
+		<div class="forum-list-tree" style="position: relative; left: 15px; margin-right: 15px;">		
+			<a class="forum-list">
+			<span id="tooltip_43494" style="cursor:pointer; cursor:hand;">Re: Google IO notes</span>		
+			</a>
+			by 
+			Abel Avram 
+			Posted
+			<span id="treeRelativeTime_3"></span>		
+			<script type="text/javascript" language="javascript">				
+				$("#treeRelativeTime_3").html(getRelativeTime(1244012534061));
+			</script>
+			<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	        <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	        
+			<script type="text/javascript" language="javascript">				
+		    	$('#tooltip_43494').mouseover(function(e) {
+		    		initializeTooltip(e);
+		    	});
+		    	$('#tooltip_43494').mouseout(function(e) {
+		    		deintializeTooltip(e);
+		    	});
+		  	</script>  	
+	  	</div>
+		<span id="replyTree_43494"></span>
+		<span id="replyMessage_43494"></span>
+	
+	
+	<div class="comments-sort">
+		<span id="comments-sort"  >
+			
+			
+				<a class="comment-sort-desc" href="javascript:changeOrder(2);">Sort by date descending</a>
+			
+		</span>
+	</div>
+	
+   	<ol class="comments">
+	
+	
+	
+		<li id="comment-43349">
+			<a name="view_43349"></a>
+			<div class="comment-header">
+				<p class="comment-top">
+					<a style="position:relative;" href="#">Back to top</a>
+				</p>
+				
+				<div id="header_43349">
+	                <h4><a href="#view_43349" name="43349" onClick="javascript:hideTooltip();return true;">server-side</a></h4>
+	                <p class="comment-author">
+	                	<span id="bodyRelativeTime_0"></span>	                		
+	                	<script type="text/javascript" language="javascript">
+	                		$("#bodyRelativeTime_0").html(getRelativeTime(1243918752696));
+						</script>
+						<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	                    <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	                    by
+	                    <strong>
+	                        Balaji D Loganathan 
+	                    </strong>
+	                </p>
+				</div>
+			</div>				
+			<div id="body_43349">
+			<p>
+				<span id="quote_43349">
+					&gt;and Java + Python on the server side, <br>Hi Abel,<br>Nice aggregation.<br>Just want to confirm whether the Google Wave back end was based on Java + Python ?<br>Regards<br>Balaji D Loganathan, Spritle Software
+				</span>
+			</p>
+			</div>
+			<p class="comment-footer"><a class="comment-reply" href="javascript:void(0)" onClick="javascript:loggedIn?replyFromFlat(43349):showLoginWindow(this,ALIGN_RIGHT,new Function('replyFromFlat(43349);'));">Reply</a></p>			
+		<span id="replyFlat_43349"></span>
+		</li>
+		<span id="replyFlatMessage_43349"></span>	
+	
+		<li id="comment-43369">
+			<a name="view_43369"></a>
+			<div class="comment-header">
+				<p class="comment-top">
+					<a style="position:relative;" href="#">Back to top</a>
+				</p>
+				
+				<div id="header_43369">
+	                <h4><a href="#view_43369" name="43369" onClick="javascript:hideTooltip();return true;">Re: server-side</a></h4>
+	                <p class="comment-author">
+	                	<span id="bodyRelativeTime_1"></span>	                		
+	                	<script type="text/javascript" language="javascript">
+	                		$("#bodyRelativeTime_1").html(getRelativeTime(1243923624166));
+						</script>
+						<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	                    <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	                    by
+	                    <strong>
+	                        Abel Avram 
+	                    </strong>
+	                </p>
+				</div>
+			</div>				
+			<div id="body_43369">
+			<p>
+				<span id="quote_43369">
+					Hi Balaji,<br>I've read and watched about Wave too much to remember where I heard of the OT server being written in Java in order to provide a link.<br>A hint is the fact that Google provides API for Java and Python for robots running on GAE on server's side. But Google wants to provide an additional lower-level API so one can use anything on the server. Check out: <a rel="nofollow" href="http://googlewavedev.blogspot.com/2009/05/introducing-google-wave-apis-what-can.html" target="_blank">googlewavedev.blogspot.com/2009/05/introducing-...</a><br><br>Regards,<br>Abel
+				</span>
+			</p>
+			</div>
+			<p class="comment-footer"><a class="comment-reply" href="javascript:void(0)" onClick="javascript:loggedIn?replyFromFlat(43369):showLoginWindow(this,ALIGN_RIGHT,new Function('replyFromFlat(43369);'));">Reply</a></p>			
+		<span id="replyFlat_43369"></span>
+		</li>
+		<span id="replyFlatMessage_43369"></span>	
+	
+		<li id="comment-43452">
+			<a name="view_43452"></a>
+			<div class="comment-header">
+				<p class="comment-top">
+					<a style="position:relative;" href="#">Back to top</a>
+				</p>
+				
+				<div id="header_43452">
+	                <h4><a href="#view_43452" name="43452" onClick="javascript:hideTooltip();return true;">Google IO notes</a></h4>
+	                <p class="comment-author">
+	                	<span id="bodyRelativeTime_2"></span>	                		
+	                	<script type="text/javascript" language="javascript">
+	                		$("#bodyRelativeTime_2").html(getRelativeTime(1243970101276));
+						</script>
+						<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	                    <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	                    by
+	                    <strong>
+	                        Richard L. Burton III 
+	                    </strong>
+	                </p>
+				</div>
+			</div>				
+			<div id="body_43452">
+			<p>
+				<span id="quote_43452">
+					You can find my Google IO Notes at <br><br><a rel="nofollow" href="http://tinyurl.com/googleionotes" target="_blank">tinyurl.com/googleionotes</a><br><br>Cheers,<br>Richard L. Burton III
+				</span>
+			</p>
+			</div>
+			<p class="comment-footer"><a class="comment-reply" href="javascript:void(0)" onClick="javascript:loggedIn?replyFromFlat(43452):showLoginWindow(this,ALIGN_RIGHT,new Function('replyFromFlat(43452);'));">Reply</a></p>			
+		<span id="replyFlat_43452"></span>
+		</li>
+		<span id="replyFlatMessage_43452"></span>	
+	
+		<li id="comment-43494">
+			<a name="view_43494"></a>
+			<div class="comment-header">
+				<p class="comment-top">
+					<a style="position:relative;" href="#">Back to top</a>
+				</p>
+				
+				<div id="header_43494">
+	                <h4><a href="#view_43494" name="43494" onClick="javascript:hideTooltip();return true;">Re: Google IO notes</a></h4>
+	                <p class="comment-author">
+	                	<span id="bodyRelativeTime_3"></span>	                		
+	                	<script type="text/javascript" language="javascript">
+	                		$("#bodyRelativeTime_3").html(getRelativeTime(1244012534061));
+						</script>
+						<!-- leave the next line here in case we will need to use it for comments older then 3 days-->
+	                    <!-- ww:date name="%{top.creationDate}" format="%{#request['postDateTimeFormat']}" />  -->
+	                    by
+	                    <strong>
+	                        Abel Avram 
+	                    </strong>
+	                </p>
+				</div>
+			</div>				
+			<div id="body_43494">
+			<p>
+				<span id="quote_43494">
+					Hi Richard,<br>thanks for sharing the notes. Very comprehensive and concise.
+				</span>
+			</p>
+			</div>
+			<p class="comment-footer"><a class="comment-reply" href="javascript:void(0)" onClick="javascript:loggedIn?replyFromFlat(43494):showLoginWindow(this,ALIGN_RIGHT,new Function('replyFromFlat(43494);'));">Reply</a></p>			
+		<span id="replyFlat_43494"></span>
+		</li>
+		<span id="replyFlatMessage_43494"></span>	
+	
+	
+	<span id="lastMessages"></span>
+	<span id="replyFlatMessage_43304"></span>
+	
+	</ol>
+
+
+    <div class="box-bottom"></div>
+    </div>
+    </div> 
+    <div class="bottom-corners"><div></div></div>
+    </div> 
+    
+    
+
+
+
+
+
+
+	
+			
+	
+	
+	<!-- Start sponsored Text Links -->
+    <div id="textlinks" class="sponsoredTextLinks" style="display:none;">
+    	<span>SPONSORED TEXT LINKS</span>
+       	<ul>
+       		<li id="textlink1" style="display:none;"></li>
+           	<li id="textlink2" style="display:none;"></li>
+           	<li id="textlink3" style="display:none;"></li>
+	       	<li id="textlink4" style="display:none;"></li>
+	       	<li id="textlink5" style="display:none;"></li>
+	       	<li id="textlink6" style="display:none;"></li>
+       	</ul>
+    </div>
+    
+    
+
+<script type="text/javascript">
+$(function(){
+	$("#widget-01-open-butt").click(function(){
+		$("#widget-01-open").toggle();
+		$("#widget-01-close").toggle();
+		return false;
+	});
+	$("#widget-01-close-butt").click(function(){
+		$("#widget-01-open").hide();
+		$("#widget-01-close").show();
+	});	
+	loadBookmarks();
+}); 
+
+//gets the bookmarks in JSON format via an AJAX call 		
+function loadBookmarks(){    
+	var bookmarksURL='/widgets/bookmarkWidget.action';         
+	
+	$.ajax({
+  	    type: "POST",
+		url: bookmarksURL, 
+		contentType: "application/x-www-form-urlencoded; charset=utf-8",		 				
+		dataType: "json",
+		success: function(data){
+			//constructing the list with bookmark links			
+			displayBookmarks(data);
+		},
+		error: function(){
+			// fail silently
+		}
+	});
+}               
+
+//displays the bookmarks list in the widget    
+function displayBookmarks(data){    
+    //alert('we are in the displayBokmarks function!');	         	      	
+	if (data != null && data[0] != null && data[0][1] != null && data[0][2] != null && data[0][3] != null ){
+		var urlone= data[0][0] + '/' + data[0][1] + '/' + data[0][2];
+		$("#bookone").attr('href', urlone);
+		$("#bookone").html(data[0][3]);
+   		$("#bookone").css({"display" : "block"});
+   		//default message
+   		$("#nobooks").html("");
+   		$("#nobooks").css({"display" : "none"});
+   	}else{   	    
+   		//default message
+   		$("#nobooks").html("You have no bookmarked content");
+   		$("#nobooks").css({"display" : "block"});
+   	}
+   	if (data != null && data[1] != null && data[1][1] != null && data[1][2] != null && data[1][3] != null ){
+		var urltwo= data[1][0] + '/' + data[1][1] + '/' + data[1][2];
+		$("#booktwo").attr('href', urltwo);		
+   		$("#booktwo").html(data[1][3]);
+   		$("#booktwo").css({"display" : "block"});
+   	}
+   	if (data != null && data[2] != null && data[2][1] != null && data[2][2] != null && data[2][3] != null ){
+		var urlthree= data[2][0] + '/' + data[2][1] + '/' + data[2][2];
+		$("#bookthree").attr('href', urlthree);		
+  		$("#bookthree").html(data[2][3]);
+   		$("#bookthree").css({"display" : "block"});
+   	}	    	
+}  
+
+//bookmark a content item; an action is triggered on the server side by an AJAX request 
+function bookmark(contentTitle){    
+    var countryCode= ''; 
+   	var uriMapping= 'news';
+   	var path= '2009/06/wave';   	   	                
+   	var unencodedurl='/widgets/bookmark.action';
+   	
+  	$.ajax({
+  	    type: "POST",
+		url: unencodedurl, 
+		contentType: "application/x-www-form-urlencoded; charset=utf-8",    	
+		data: { "countryCodePart" : countryCode, "uriMappingPart" : uriMapping, pathPart : path, namePart : contentTitle },  				
+		success: function(){
+			$("#bookmark-message p").fadeIn(2000).fadeOut(4000);
+		},
+		error: function(){
+			$("#bookmark-message-error p").fadeIn(2000).fadeOut(4000);
+		}
+	});
+	//refresh the bookmarks widget; do this on the client without another server hit
+	shiftBookmarks(contentTitle);		    	
+}       
+
+//used to construct the bookmarks list in real time on the client after the user bookmarks a certain content item     	
+function shiftBookmarks(contentTitle){ 
+   	//construct the first link
+  	var urlone = '' 
+  	  		    + '/' + 'news' 
+  	   		    + '/' + '2009/06/wave';
+    	    
+   	//if the new bookmark link will not introduce duplicates or is identical with the third bookmarked link
+   	if (urlone != $("#bookone").attr('href') && urlone != $("#booktwo").attr('href')){ 
+   		shiftAll(contentTitle, urlone);	    	
+    }else if(urlone == $("#booktwo").attr('href')){  
+    	//interchange bookmark one and bookmark two
+    	var interchangeUrl = $("#bookone").attr('href');
+       	var interchangeContentTitle = $("#bookone").html();
+       	$("#bookone").attr('href', $("#booktwo").attr('href'));
+       	$("#bookone").html($("#booktwo").html());
+       	$("#booktwo").attr('href', interchangeUrl);
+       	$("#booktwo").html(interchangeContentTitle);
+    }
+    //do nothing if the new bookmark link is identical with the first bookmark link existing in the widget
+}
+
+//introduce the new bookmark as first in the list shifting the existing bookmarks to the end of the list
+function shiftAll(contentTitle, urlone){
+	var displayBookOne = $("#bookone").css("display");
+   	var displayBookTwo = $("#booktwo").css("display");
+        
+   	//if second bookmark exists(is displayed) then it becomes bookmark three
+   	if (displayBookTwo == 'block'){
+   		$("#bookthree").attr('href', $("#booktwo").attr('href'));
+   		$("#bookthree").html($("#booktwo").html());
+		$("#bookthree").css({"display" : "block"});
+    }
+             
+    //if first bookmark exists(is displayed) then it becomes bookmark two
+    if (displayBookOne == 'block'){
+    	$("#booktwo").attr('href', $("#bookone").attr('href'));
+       	$("#booktwo").html($("#bookone").html());
+		$("#booktwo").css({"display" : "block"});     	        
+    }    	        	         	    
+    	    
+    $("#bookone").attr('href', urlone);
+	$("#bookone").html(contentTitle);
+	$("#bookone").css({"display" : "block"});
+	//eliminate default message
+	$("#nobooks").html("");
+   	$("#nobooks").css({"display" : "none"});
+}
+
+//BASE64 encoding utility
+var Base64 = {
+
+	// private property
+	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+
+	// public method for encoding
+	encode : function (input) {
+		var output = "";
+		var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+		var i = 0;
+
+		input = Base64._utf8_encode(input);
+
+		while (i < input.length) {
+
+			chr1 = input.charCodeAt(i++);
+			chr2 = input.charCodeAt(i++);
+			chr3 = input.charCodeAt(i++);
+
+			enc1 = chr1 >> 2;
+			enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+			enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+			enc4 = chr3 & 63;
+
+			if (isNaN(chr2)) {
+				enc3 = enc4 = 64;
+			} else if (isNaN(chr3)) {
+				enc4 = 64;
+			}
+
+			output = output +
+			this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
+			this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+
+		}
+
+		return output;
+	},
+
+	// public method for decoding
+	decode : function (input) {
+		var output = "";
+		var chr1, chr2, chr3;
+		var enc1, enc2, enc3, enc4;
+		var i = 0;
+
+		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+
+		while (i < input.length) {
+
+			enc1 = this._keyStr.indexOf(input.charAt(i++));
+			enc2 = this._keyStr.indexOf(input.charAt(i++));
+			enc3 = this._keyStr.indexOf(input.charAt(i++));
+			enc4 = this._keyStr.indexOf(input.charAt(i++));
+
+			chr1 = (enc1 << 2) | (enc2 >> 4);
+			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+			chr3 = ((enc3 & 3) << 6) | enc4;
+
+			output = output + String.fromCharCode(chr1);
+
+			if (enc3 != 64) {
+				output = output + String.fromCharCode(chr2);
+			}
+			if (enc4 != 64) {
+				output = output + String.fromCharCode(chr3);
+			}
+
+		}
+
+		output = Base64._utf8_decode(output);
+
+		return output;
+
+	},
+
+	// private method for UTF-8 encoding
+	_utf8_encode : function (string) {
+		string = string.replace(/\r\n/g,"\n");
+		var utftext = "";
+
+		for (var n = 0; n < string.length; n++) {
+
+			var c = string.charCodeAt(n);
+
+			if (c < 128) {
+				utftext += String.fromCharCode(c);
+			}
+			else if((c > 127) && (c < 2048)) {
+				utftext += String.fromCharCode((c >> 6) | 192);
+				utftext += String.fromCharCode((c & 63) | 128);
+			}
+			else {
+				utftext += String.fromCharCode((c >> 12) | 224);
+				utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+				utftext += String.fromCharCode((c & 63) | 128);
+			}
+
+		}
+
+		return utftext;
+	},
+
+	// private method for UTF-8 decoding
+	_utf8_decode : function (utftext) {
+		var string = "";
+		var i = 0;
+		var c = c1 = c2 = 0;
+
+		while ( i < utftext.length ) {
+
+			c = utftext.charCodeAt(i);
+
+			if (c < 128) {
+				string += String.fromCharCode(c);
+				i++;
+			}
+			else if((c > 191) && (c < 224)) {
+				c2 = utftext.charCodeAt(i+1);
+				string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+				i += 2;
+			}
+			else {
+				c2 = utftext.charCodeAt(i+1);
+				c3 = utftext.charCodeAt(i+2);
+				string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+				i += 3;
+			}
+
+		}
+
+		return string;
+	}
+}   
+</script>
+
+
+
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=infoq"></script>
+  
+<script type="text/javascript">if (!NREUMQ.f) { NREUMQ.f=function() {NREUMQ.push(["load",new Date().getTime()]);var e=document.createElement("script");e.type="text/javascript";e.async=true;e.src="https://d1ros97qkrwjf5.cloudfront.net/19/eum/rum.js";document.body.appendChild(e);if(NREUMQ.a)NREUMQ.a();};NREUMQ.a=window.onload;window.onload=NREUMQ.f;};NREUMQ.push(["nrf2","beacon-1.newrelic.com","bfafe6a5f6",399876,"YAFWMEEAW0RUVk1cCllLfjdjTltSQkYWRg1YExoOQBE=",0,117,new Date().getTime()])</script>
+			
+		</div>
+		
+	</div></div>
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+<script type='text/javascript' src='http://partner.googleadservices.com/gampad/google_service.js'></script>
+<script type='text/javascript'>
+		
+	// used for production
+	GS_googleAddAdSenseService("ca-pub-8701954197102483");
+	
+	GS_googleEnableAllServices();
+</script>
+<script type='text/javascript'>
+	
+	
+	// used for production
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_300x250_banner_top");
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_300x250_banner_bottom");
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_leftbar_skyscraper_120x600");
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_textlink1");
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_textlink2");
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_textlink3");
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_textlink4");
+	GA_googleAddSlot("ca-pub-8701954197102483", "en_textlink5");
+</script>
+<script type='text/javascript'>
+	GA_googleFetchAds();
+</script>
+	
+
+
+
+
+
+
+
+<div style="position: absolute; z-index: 1000; left: 0px; top: 0px; width: 100%; height: 100%; display: none;" id="disabledZone">
+	<div style="position: absolute; top: 0px; right: 0px; background: none repeat scroll 0% 0% red; color: white; font-family: Arial,Helvetica,sans-serif; padding: 4px;" id="messageZone">Loading...</div>
+</div>
+
+<!-- right side start -->
+
+	<div id="rightbar">
+	<div id="right-wrapper">
+	    <!-- box start -->
+	    <div class="box">
+	        <h2>Educational Content</h2>
+	        <ul class="menu" id="tabsmenu">
+	   			<li id="tab_ALL_EXCEPT_NEWS" class="m-ALL_EXCEPT_NEWS-on"><a href="#" onclick="ContentSummary.switchTab('ALL_EXCEPT_NEWS');return false;">All</a></li>
+	            <li id="tab_ARTICLE" class="m-ARTICLE-off"><a href="#" onclick="ContentSummary.switchTab('ARTICLE');return false;">Articles</a></li>
+	            <li id="tab_PRESENTATION" class="m-PRESENTATION-off"><a href="#" onclick="JSResource.presentationsTab();return false;">Presentations</a></li>
+	            <li id="tab_INTERVIEW" class="m-INTERVIEW-off"><a href="#" onclick="JSResource.interviewsTab();return false;">Interviews</a></li>
+	            <li id="tab_MINIBOOK" class="m-MINIBOOK-off"><a href="#" onclick="JSResource.minibooksTab();return false;">Minibooks</a></li>
+	        </ul>
+		    <div class="top-corners"><div></div></div>
+		    
+		    <div class="box-content">
+			    <div class="box-content-2">
+			    <div id="rightbarcontentbox" class="box-content-3">
+                    
+					
+                        
+						
+					
+
+
+
+
+
+
+
+
+
+			
+<form id="tabstateform" onsubmit="customOnsubmit(); return true;" action="">
+<table class="wwFormTable">
+
+	<div id="tabstateformelements">
+		<input id="startIndex" type="hidden" name="startIndex" value="0"/>
+		<input id="selectedTab" type="hidden" name="selectedTab" value="ALL_EXCEPT_NEWS"/>
+		<input id="rightBarLanguage" type="hidden" name="language" value="en" />
+	</div>
+</table>
+</form>
+
+
+<script>
+	function customOnsubmit() {
+		
+	}
+</script>
+
+
+
+
+
+
+
+	
+	
+		
+	
+	<div class="entry" id="entry1">
+    	<h1 class="ex-presentations"><a href="/presentations/Object-Oriented-JavaScript">Object Oriented JavaScript</a></h1>
+    	
+        	<p class="image"><a href="/presentations/Object-Oriented-JavaScript"><img src="/resource/presentations/Object-Oriented-JavaScript/en/smallimage/Sara.JPG" alt="" /></a></p>
+        
+        <p>Sara Chipps discusses using OOP with JavaScript, and polymorphism, encapsulation, inheritance, constructors, and helper functions with JQuery.</p>
+        <ul class="info link-col" style="margin-left:0px;">
+	        <li class="author">	        	
+	        	
+					
+				
+				<strong><a
+	
+	href="/author/Sara-Chipps"
+
+ class="editorlink">
+Sara Chipps</a>
+</strong>				
+				
+				Sep 21, 2011
+	        	,
+	        </li>
+    	    
+    	    	
+	    	    	<li class="comments">
+	    	    		<a href="/presentations/Object-Oriented-JavaScript"><span>&nbsp;</span>	    	    		
+	    		    		2    		    		    		    		
+	    		    	</a>
+	    		    </li>
+    		   	 
+    		 
+        </ul>
+    </div>
+    
+    
+    
+	    
+		
+		
+	
+        
+    <div class="clearer"></div>
+
+	
+	
+		
+	
+	<div class="entry" id="entry2">
+    	<h1 class="ex-presentations"><a href="/presentations/Building-Scalable-Systems-Asynchronous-Approach">Building Scalable Systems: an Asynchronous Approach</a></h1>
+    	
+        	<p class="image"><a href="/presentations/Building-Scalable-Systems-Asynchronous-Approach"><img src="/resource/presentations/Building-Scalable-Systems-Asynchronous-Approach/en/smallimage/Theo.JPG" alt="" /></a></p>
+        
+        <p>Theo Schlossnagle expresses his opinion on Big Data, NoSQL, cloud, system architecture and design, then he discusses the benefit of using asynchronous queues for building scalable systems.</p>
+        <ul class="info link-col" style="margin-left:0px;">
+	        <li class="author">	        	
+	        	
+					
+				
+				<strong><a
+	
+	href="/author/Theo-Schlossnagle"
+
+ class="editorlink">
+Theo Schlossnagle</a>
+</strong>				
+				
+				Sep 21, 2011
+	        	,
+	        </li>
+    	    
+    	    	
+	    	    	<li class="comments">
+	    	    		<a href="/presentations/Building-Scalable-Systems-Asynchronous-Approach"><span>&nbsp;</span>	    	    		
+	    		    		1    		    		    		    		
+	    		    	</a>
+	    		    </li>
+    		   	 
+    		 
+        </ul>
+    </div>
+    
+    
+    
+	    
+	    	<div id="banner300x250_top" style="clear: both; padding-top: 5px;display:none;">
+		    	<div id="adIndex2" class="adContour">	    		
+					<script type='text/javascript'>GA_googleFillSlot("en_300x250_banner_top");</script>
+		    	</div>
+				<span class="banner_announcement">advertisement</span>
+			</div>
+			<script type='text/javascript'>
+				checkToDisplayGAMADs("adIndex2", "banner300x250_top");
+			</script>
+		
+		
+		
+	
+        
+    <div class="clearer"></div>
+
+	
+	
+		
+	
+	<div class="entry" id="entry3">
+    	<h1 class="ex-articles"><a href="/articles/multi-core-node-js">Multi-Process Node.js: Motivations, Challenges and Solutions</a></h1>
+    	
+        	<p class="image"><a href="/articles/multi-core-node-js"><img src="/resource/articles/multi-core-node-js/en/smallimage/multi-core-node.jpg" alt="" /></a></p>
+        
+        <p>Node.js doesn’t directly expose facilities for multiple-core concurrency. InfoQ has conducted a virtual panel with the creators of Node.js projects that deal with this issue.</p>
+        <ul class="info link-col" style="margin-left:0px;">
+	        <li class="author">	        	
+	        	
+					
+				
+				<strong><a
+	
+	href="/author/Dionysios-G.-Synodinos"
+
+ class="editorlink">
+Dionysios G. Synodinos</a>
+</strong>				
+				
+				Sep 21, 2011
+	        	,
+	        </li>
+    	    
+    	    	
+	    	    	<li class="comments">
+	    	    		<a href="/articles/multi-core-node-js"><span>&nbsp;</span>	    	    		
+	    		    		1    		    		    		    		
+	    		    	</a>
+	    		    </li>
+    		   	 
+    		 
+        </ul>
+    </div>
+    
+    
+    
+	    
+		
+		
+	
+        
+    <div class="clearer"></div>
+
+	
+	
+		
+	
+	<div class="entry" id="entry4">
+    	<h1 class="ex-presentations"><a href="/presentations/Let-It-Crash">Let It Crash ... Except When You Shouldn't</a></h1>
+    	
+        	<p class="image"><a href="/presentations/Let-It-Crash"><img src="/resource/presentations/Let-It-Crash/en/smallimage/Steve.JPG" alt="" /></a></p>
+        
+        <p>Steve Vinoski explains how to avoid some of the Erlang errors that can bring down a system starting from the premise that not all the crashes are welcome as the “Let It Crash” philosophy might suggest</p>
+        <ul class="info link-col" style="margin-left:0px;">
+	        <li class="author">	        	
+	        	
+					
+				
+				<strong><a
+	
+	href="/author/Steve-Vinoski"
+
+ class="editorlink">
+Steve Vinoski</a>
+</strong>				
+				
+				Sep 20, 2011
+	        	,
+	        </li>
+    	    
+    	    	
+	    	    	<li class="comments">
+	    	    		<a href="/presentations/Let-It-Crash"><span>&nbsp;</span>	    	    		
+	    		    		1    		    		    		    		
+	    		    	</a>
+	    		    </li>
+    		   	 
+    		 
+        </ul>
+    </div>
+    
+    
+    
+	    
+		
+		
+	
+        
+    <div class="clearer"></div>
+
+	
+	
+		
+	
+	<div class="entry" id="entry5">
+    	<h1 class="ex-presentations"><a href="/presentations/Lean-and-Kanban-at-the-BBC">When the Pressure Is Really On: A “Rough and Ready” Application of Lean and Kanban at the BBC</a></h1>
+    	
+        	<p class="image"><a href="/presentations/Lean-and-Kanban-at-the-BBC"><img src="/resource/presentations/Lean-and-Kanban-at-the-BBC/en/smallimage/Katherine.JPG" alt="" /></a></p>
+        
+        <p>Katherine Kirk presents a case study of a small team which decided to use Lean and Kanban to rapidly iterate over the development of the BBC iPlayer.</p>
+        <ul class="info link-col" style="margin-left:0px;">
+	        <li class="author">	        	
+	        	
+					
+				
+				<strong><a
+	
+	href="/author/Katherine-Kirk"
+
+ class="editorlink">
+Katherine Kirk</a>
+</strong>				
+				
+				Sep 20, 2011
+	        	,
+	        </li>
+    	    
+    	    	
+	    	    	<li class="comments">
+	    	    		<a href="/presentations/Lean-and-Kanban-at-the-BBC"><span>&nbsp;</span>	    	    		
+	    		    		1    		    		    		    		
+	    		    	</a>
+	    		    </li>
+    		   	 
+    		 
+        </ul>
+    </div>
+    
+    
+    
+	    
+		
+		
+	
+        
+    <div class="clearer"></div>
+
+	
+	
+		
+	
+	<div class="entry" id="entry6">
+    	<h1 class="ex-articles"><a href="/articles/WebSharper">F# mobile development with WebSharper</a></h1>
+    	
+        	<p class="image"><a href="/articles/WebSharper"><img src="/resource/articles/WebSharper/en/smallimage/article icon.jpg" alt="" /></a></p>
+        
+        <p>Adam Granicz shows how the functional programming language F#, along with WebSharper, can be used to tame mobile development.</p>
+        <ul class="info link-col" style="margin-left:0px;">
+	        <li class="author">	        	
+	        	
+					
+				
+				<strong><a
+	
+	href="/author/Adam-Granicz"
+
+ class="editorlink">
+Adam Granicz</a>
+</strong>				
+				
+				Sep 20, 2011
+	        	,
+	        </li>
+    	    
+    	    	
+	    	    	<li class="comments">
+	    	    		<a href="/articles/WebSharper"><span>&nbsp;</span>	    	    		
+	    		    		1    		    		    		    		
+	    		    	</a>
+	    		    </li>
+    		   	 
+    		 
+        </ul>
+    </div>
+    
+    
+    
+	    
+		
+		
+	    	<div id="banner300x250_bottom" style="clear: both; padding-top: 5px;display:none;">
+		    	<div id="adIndex6" class="adContour">
+					<!-- en_300x250_banner_bottom -->
+					<script type='text/javascript'>GA_googleFillSlot("en_300x250_banner_bottom");</script>
+		    	</div>
+				<span class="banner_announcement">advertisement</span>
+			</div>
+			<script type='text/javascript'>
+				checkToDisplayGAMADs("adIndex6", "banner300x250_bottom");
+			</script>
+		
+	
+        
+    <div class="clearer"></div>
+
+	
+	
+		
+	
+	<div class="entry" id="entry7">
+    	<h1 class="ex-articles"><a href="/articles/active-architecture-agile">Active Architecture for Agile Projects</a></h1>
+    	
+        	<p class="image"><a href="/articles/active-architecture-agile"><img src="/resource/articles/active-architecture-agile/en/smallimage/active_architecture.jpg" alt="" /></a></p>
+        
+        <p>Active Architecture is a type of documentation that is based on User Stories and helps to bridge the gap between User Stories in Agile Projects and large design deliverables on Traditional projects. </p>
+        <ul class="info link-col" style="margin-left:0px;">
+	        <li class="author">	        	
+	        	
+					
+				
+				<strong><a
+	
+	href="/author/Terry-Bunio"
+
+ class="editorlink">
+Terry Bunio</a>
+</strong>				
+				
+				Sep 19, 2011
+	        	,
+	        </li>
+    	    
+    	    	
+	    	    	<li class="comments">
+	    	    		<a href="/articles/active-architecture-agile"><span>&nbsp;</span>	    	    		
+	    		    		8    		    		    		    		
+	    		    	</a>
+	    		    </li>
+    		   	 
+    		 
+        </ul>
+    </div>
+    
+    
+    
+	    
+		
+		
+	
+        
+    <div class="clearer"></div>
+
+
+
+
+
+<ul class="newsnav link-col"  id="paginationRightbar">
+
+
+</ul>
+
+
+
+<!-- rightbarInfoQrightbar -->
+
+	                <!-- Rightbar:3ms -->
+    
+    				<div class="clearer"></div>
+				    <div class="box-bottom"></div>
+				</div>
+				</div>
+				<div class="bottom-corners"><div></div></div>
+			</div>
+		</div>
+		<!-- box end -->
+		<script type="text/javascript">
+			ContentSummary.determine300x250BannerPosition();
+		</script>
+	</div>
+	</div>
+
+<!-- right side end -->
+
+	</div>
+
+	<div class="clearer"></div>
+
+	
+
+
+
+
+
+
+
+
+	<div id="footer">
+	<script type="text/javascript">
+		$.ajax({
+			url: "/api/latestcontent.action",
+			contentType: "application/x-www-form-urlencoded; charset=utf-8",
+			type: 'POST',
+			data: {"categoryAliases" : "development,architecture-design,process-practices,operations-infrastructure,enterprise-architect", "itemsNumber" : "5", "languageCode" : "en"},
+			success: displayCategoryWidget
+		});
+		function displayCategoryWidget(data) {
+			addLatestNewsColumn(data['developmentName'], data['development']);
+			addLatestNewsColumn(data['architecture-designName'], data['architecture-design']);
+			addLatestNewsColumn(data['process-practicesName'], data['process-practices']);
+			addLatestNewsColumn(data['operations-infrastructureName'], data['operations-infrastructure']);
+			addLatestNewsColumn(data['enterprise-architectName'], data['enterprise-architect']);
+			var newLineDom = $('<div class="clearer"></div>');
+			$('.top-band-footer').append(newLineDom);
+		}
+		function addLatestNewsColumn(title, list) {
+			var countryCode= '';
+			var newColumnDom = $('<div class="footer-column">');
+			var titleDom = $('<p>'+title+'</p>');
+			newColumnDom.append(titleDom);
+			var listDom = $('<ul></ul>');
+			newColumnDom.append(listDom);
+			for(var it=0;it<list.length;it++){
+				var elementDom = $('<li><a href="' + countryCode + list[it]['path'] + '" title="' + list[it]['title'] + '">' + list[it]['title'] + '</a></li>');
+				listDom.append(elementDom);
+			}
+			$('.top-band-footer').append(newColumnDom);
+		}
+	</script>
+	<div class="top-band-footer">
+	</div>
+	
+    <div class="bottom-band-footer">
+    	
+      <div class="footer-column">
+        <ul>
+       	  <li><a href="/" class="home" title="Home">Home</a></li>
+          <li><a href="/about" class="about" title="About InfoQ">About us</a></li>
+          
+          <li><a href="http://www.qconferences.com/" target="_blank" class="qcon" title="Qcon Conferences">QCon Conferences</a></li>
+          
+		  
+          
+	        <li><a href="/reginit.action" class="account" title="Create account">Create account</a></li>
+          	<li><a href="javascript:void(0)" class="login" title="Login" onClick="javascript:showLoginWindow(this,ALIGN_LEFT,new Function('void(0);'));">Login</a></li>
+          
+          <li class="contribute-li"><a href="mailto:news@infoq.com?Subject=[NEWS]&Body=Thanks for your interest in submitting news to InfoQ.com. Please provide as much detail about your news suggestion in this email as possible.   Your suggestion will be forwarded to a queue our editors review for news ideas - if selected - an InfoQ editor will write an original story using material you provided.  Feel free to delete this paragraph and replace it with your news story.  - InfoQ Editorial team." class="contribute-news" title="Contribute news">Contribute News</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column" id="mainCommunitiesArea">
+      	<p class="communities" id="communitiespick">Choose the default sections</p>
+      	<div id="communities">
+	        <ul>
+	        	
+
+
+
+
+
+
+<script language="JavaScript">
+var communityChangeMessage = 'Your new preferences will be used starting with the next refresh.';
+</script>	
+
+
+	<li><input type="checkbox" name="development" value="true" checked="checked" id="community6815" class="styled" onclick="includeExcludeCommunity(this, false);"/>
+ <a href='/development/'>Development</a></li>
+
+	<li><input type="checkbox" name="architecture-design" value="true" checked="checked" id="community6816" class="styled" onclick="includeExcludeCommunity(this, false);"/>
+ <a href='/architecture-design/'>Architecture &amp; Design</a></li>
+
+	<li><input type="checkbox" name="process-practices" value="true" checked="checked" id="community6817" class="styled" onclick="includeExcludeCommunity(this, false);"/>
+ <a href='/process-practices/'>Process &amp; Practices</a></li>
+
+	<li><input type="checkbox" name="operations-infrastructure" value="true" checked="checked" id="community6818" class="styled" onclick="includeExcludeCommunity(this, false);"/>
+ <a href='/operations-infrastructure/'>Operations &amp; Infrastructure</a></li>
+
+	<li><input type="checkbox" name="enterprise-architect" value="true" checked="checked" id="community6819" class="styled" onclick="includeExcludeCommunity(this, false);"/>
+ <a href='/enterprise-architect/'>Enterprise Architecture</a></li>
+
+
+	        </ul>
+        </div>
+      </div>
+      
+      
+
+
+
+
+
+
+
+
+<div class="footer-column">
+	
+	
+	<p>EVENTS</p>
+	<ul>
+		<li><a href="http://qconhangzhou.com" title="QCon Hangzhou Oct 21-22, 2011">QCon Hangzhou Oct 21-22, 2011</a></li>
+		<li><a href="http://qconsf.com" title="QCon San Francisco November 16-18, 2011">QCon San Francisco November 16-18, 2011</a></li>
+	</ul>
+</div>
+
+	
+      
+      <div class="footer-column latest-news">
+	    
+
+
+
+
+
+
+
+<a href="http://qconsf.com?utm_source=infoq&utm_medium=banner&utm_campaign=footerbannerinfoq" target="_blank">
+	<img src="http://cdn1.infoq.com/styles/i/qcon/sf_2011/qcon_banner_350x250_500off.jpg"/>
+</a>
+
+     </div>
+      
+      <div class="footer-column">
+      	<p class="general">General Feedback</p>
+        <a class="mail-to" href="mailto:feedback@infoq.com" title="">feedback@infoq.com</a>
+        
+        <p class="general">Bugs</p>
+        <a class="mail-to" href="mailto:bugs@infoq.com" title="">bugs@infoq.com</a>
+        
+        <p class="general">Advertising</p>
+        <a class="mail-to" href="mailto:sales@infoq.com" title="">sales@infoq.com</a>
+        
+        <p class="general">Editorial</p>
+        <a class="mail-to" href="mailto:editors@infoq.com" title="">editors@infoq.com</a>
+
+        <p class="general">Twitter</p>
+        <a class="mail-to" href="http://twitter.com/infoq" title="" target="_blank">http://twitter.com/infoq</a>
+        
+        <span>InfoQ.com and all content copyright &#169; 2006-2011 C4Media Inc.&nbsp;InfoQ.com hosted at <a href="http://www.contegix.com/">Contegix</a>, the best ISP we've ever worked with.<br/><a href="/PrivacyPolicy.jsp">Privacy policy</a></span>
+      </div>
+      <div class="clearer"></div>
+    </div>
+	</div>
+
+</div>
+
+<script src="http://cdn3.infoq.com/scripts/__utm.js" type="text/javascript"></script>
+<script src="/dwr/engine.js" type="text/javascript"></script>
+<script src="/dwr/interface/UserCategoryUtil.js" type="text/javascript"></script>
+<script src="/dwr/interface/DWRRewriteAction.js" type="text/javascript"></script>
+<script type="text/javascript">
+	ContentSummary.setSelectedTab('en');
+	$("#content-wrapper").mouseenter(function() {	
+			showDefaultTopics();
+	});
+</script>
+
+
+
+
+
+
+
+<script type="text/javascript">
+	var includeName = 'Include';
+	var excludeName = 'Exclude';
+	var includeHint = 'You can include this category.';
+	var excludeHint = 'You can exclude this category.';
+	var excludeCategoryMessage = 'You can re-include from your profile personalization, or right now.<BR />';
+	var viewallCategoryMessage = 'You can view all items that belong to this category.';
+	var busyMessage = 'Please wait...';
+	var contextPath = '' + '/';
+	var viewallCategoryPath= '';
+	var includeExcludeLink= true;
+</script>
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6608133-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+<script src="http://cdn1.infoq.com/scripts/tracker.js?20110811" type="text/javascript"></script>
+<script type="text/javascript">
+Tracker.safeExec(function() {
+	
+    
+    _gaq.push(["_trackEvent", "userregistered", "false"]);
+    	
+});
+Tracker.safeExec(function() {_gaq.push(["_trackEvent", "userprefs", "0"]);});
+Tracker.safeExec(Tracker.doTrackVcrImpressions);
+Tracker.safeExec(Tracker.doTrackPresentationDefaultDisplay);
+Tracker.safeExec(Tracker.doTrackTaxonomyImpressions);
+Tracker.safeExec(Tracker.doTrackAuthorImpressions);
+</script>
+
+
+
+
+
+
+
+
+<div id="textlinks_afterpageLoad" style="display: none;">
+	<div id="divtextlink1" style="display:none;">
+		<!-- en_textlink1 -->
+		<script type='text/javascript'>
+			GA_googleFillSlot("en_textlink1");
+		</script>
+	</div>
+	<div id="divtextlink2" style="display:none;">
+		<!-- en_textlink2 -->
+		<script type='text/javascript'>
+			GA_googleFillSlot("en_textlink2");
+		</script>
+	</div>
+	<div id="divtextlink3" style="display:none;">
+		<!-- en_textlink3 -->
+		<script type='text/javascript'>
+			GA_googleFillSlot("en_textlink3");
+		</script>
+	</div>
+	<div id="divtextlink4" style="display:none;">
+		<!-- en_textlink4 -->
+		<script type='text/javascript'>
+			GA_googleFillSlot("en_textlink4");
+		</script>
+	</div>
+	<div id="divtextlink5" style="display:none;">
+		<!-- en_textlink5 -->
+		<script type='text/javascript'>
+			GA_googleFillSlot("en_textlink5");
+		</script>
+	</div>
+</div>
+<script type="text/javascript">
+		$(document).ready(function() {
+		    var noleftbartextlinks='';			
+			
+			for(i=1; i<6; i++){					
+					$("#textlink"+i).append($("#divtextlink"+i+" > div"));
+					$("#divtextlink"+i+" > div").remove();
+			}	
+			checkToDisplayGAMADs("textlink1", "textlink1");
+			checkToDisplayGAMADs("textlink2", "textlink2");
+			checkToDisplayGAMADs("textlink3", "textlink3");
+			checkToDisplayGAMADs("textlink4", "textlink4");
+			checkToDisplayGAMADs("textlink5", "textlink5");
+			if(noleftbartextlinks=='true'){
+				if($("#home_textlinks > li:has(div)").length>0){
+					$('#widgetSponsoredLinks').show();
+					// resize the reserved space 
+					$('#hometextlinks').css("height","auto");
+					$("#home_textlinks > li:visible:last").addClass("last");
+				}else{
+					// hide the #hometextlinks div which acts like a predefined reserved space there because there are no links
+					$('#hometextlinks').hide();
+				}
+			}else{ //textlinks in the content page use case			    
+				//eliminate <br> and </br> in this specific use case
+				for(i=1; i<6; i++){					
+					var linkContent = $("#textlink" + i + " > div").html();
+					if (linkContent == null || linkContent == '')
+						continue;
+										
+					//perform a global case insensitive REGEX search
+					//search and replace the <br> and <br/>, followed, preceded, surrounded by spaces or without any spaces around them
+					$("#textlink" + i + " > div").html(linkContent.replace(/\s*<br>\s*|\s*<br\/>\s*/ig, ' '));					
+				}				
+				
+				//display the text links region
+				if($("#textlinks > ul >li:has(div)").length>0){
+					$('#textlinks').show();
+				}				
+			}
+	     });				
+	</script>
+</body>
+</html>
+
